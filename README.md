@@ -5,7 +5,7 @@ utilise :
 - Tailwind 4
 - DaisyUi 5
 
-## Initialis
+## Installation
 
 python -m venv .venv
 source .venv/bin/activate      # Linux/Mac
@@ -15,7 +15,8 @@ pip install -r requirements.txt
 
 python manage.py runserver
 
-## 
+
+## Initialisation
 
 python -m venv .venv
 .venv\Scripts\activate
