@@ -25,16 +25,13 @@ django-admin startproject ru
 cd ru
 python manage.py startapp core
 python manage.py startapp backoffice
-- création des modèles via Claude.ai à partir de la stricture des tables SQL + création des indexes
-- ajoute de l'app au projet
 python manage.py makemigrations
 python manage.py migrate 
 python manage.py createsuperuser
-- ajout des modèles à l'admin dans core/admin.py
-- création et debug des templates créés par Claude.ai à partir des 
-
-
 python manage.py runserver
+
+
+
 
 
 
