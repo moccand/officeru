@@ -1,4 +1,0 @@
-config python
-- utiliser djangon_environ
-- utiliser des settings différents selon les environnements pour retirer l'admin en prod ?
-

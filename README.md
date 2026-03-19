@@ -1,14 +1,15 @@
 # officeru
 
-
-
-
+utilise : 
+- Django 6.0.3
+- Tailwind 4
+- DaisyUi 5
 
 ## Initialis
 
 python -m venv .venv
 source .venv/bin/activate      # Linux/Mac
-# ou .venv\Scripts\activate    # Windows
+ou .venv\Scripts\activate    # Windows
 
 pip install -r requirements.txt
 
@@ -29,10 +30,10 @@ python manage.py makemigrations
 python manage.py migrate 
 python manage.py createsuperuser
 - ajout des modèles à l'admin dans core/admin.py
+- création et debug des templates créés par Claude.ai à partir des 
 
 
 python manage.py runserver
 
 
 
-je reviens sur le sujet des templates : mon projet Django 6/0.3 s'appelle 'ru' et mon application 'backoffice' est-ce que tu peux me refaire une structure de template optimisée et les URL pour les 2 pages ? la page visiteur.html que tu as préparée sera consultation/carte et la page dasboard sera 
