@@ -1,0 +1,81 @@
+# ══════════════════════════════════════════════
+# Environnement Python
+# ══════════════════════════════════════════════
+.venv/
+venv/
+env/
+ENV/
+.env/
+
+# Bytecode Python
+*.py[cod]
+__pycache__/
+*.pyo
+
+# Distribution / packaging
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ══════════════════════════════════════════════
+# Django
+# ══════════════════════════════════════════════
+
+# Base de données locale (ne jamais committer)
+*.sqlite3
+*.db
+
+# Fichiers media uploadés par les utilisateurs
+/ru/media/
+
+# Fichiers statiques collectés (générés par collectstatic)
+/ru/staticfiles/
+/ru/static_root/
+
+# Cache Django
+.cache/
+
+# ══════════════════════════════════════════════
+# Variables d'environnement et secrets
+# ══════════════════════════════════════════════
+
+# Fichiers .env (contiennent clés secrètes, mots de passe BDD, etc.)
+.env
+.env.*
+*.env
+!.env.example    # on garde l'exemple en modèle, sans les vraies valeurs
+
+# ══════════════════════════════════════════════
+# Logs
+# ══════════════════════════════════════════════
+*.log
+logs/
+
+# ══════════════════════════════════════════════
+# IDE et éditeurs
+# ══════════════════════════════════════════════
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.DS_Store         # macOS
+Thumbs.db         # Windows
+.idea/*
+!.idea/runConfigurations/   # partager les configs de lancement
+!.idea/codeStyles/          # partager le style de code
+.idea/*.xml                 # mais exclure les fichiers machine-specific
+# ══════════════════════════════════════════════
+# Tests et couverture
+# ══════════════════════════════════════════════
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# ══════════════════════════════════════════════
+# Divers
+# ══════════════════════════════════════════════
+*.bak
+*.swp
+*.tmp

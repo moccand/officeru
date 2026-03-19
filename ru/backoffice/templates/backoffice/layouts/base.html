@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="{{ request.session.ru_theme|default:'light' }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block page_title %}RU{% endblock %} — Renseignement d'urbanisme</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <style>
+    [data-theme="colorblind"] {
+      color-scheme: light;
+      --color-base-100: oklch(98% 0.005 240);
+      --color-base-200: oklch(93% 0.012 240);
+      --color-base-300: oklch(86% 0.018 240);
+      --color-base-content: oklch(14% 0.025 240);
+      --color-primary: oklch(42% 0.19 255);
+      --color-primary-content: oklch(99% 0.005 255);
+      --color-secondary: oklch(62% 0.20 50);
+      --color-secondary-content: oklch(14% 0.04 50);
+      --color-accent: oklch(57% 0.17 220);
+      --color-accent-content: oklch(99% 0.005 220);
+      --color-neutral: oklch(30% 0.02 240);
+      --color-neutral-content: oklch(97% 0.005 240);
+      --color-info: oklch(54% 0.16 240);
+      --color-info-content: oklch(99% 0.005 240);
+      --color-success: oklch(47% 0.15 195);
+      --color-success-content: oklch(99% 0.005 195);
+      --color-warning: oklch(67% 0.21 55);
+      --color-warning-content: oklch(14% 0.04 55);
+      --color-error: oklch(40% 0.21 285);
+      --color-error-content: oklch(99% 0.005 285);
+      --radius-selector: 0.5rem;
+      --radius-field: 0.5rem;
+      --radius-box: 0.75rem;
+      --border: 1px;
+    }
+  </style>
+
+    <style type="text/tailwindcss">
+    * { font-family: 'Figtree', sans-serif !important; }
+
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(37,99,235,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(37,99,235,0.03) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+
+    .stat-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px color-mix(in oklch, var(--color-primary) 15%, transparent);
+    }
+
+    .menu li a.active-nav {
+      background-color: color-mix(in oklch, var(--color-primary) 12%, transparent);
+      color: var(--color-primary);
+      font-weight: 600;
+    }
+
+    .fade-in { opacity:0; transform:translateY(10px); animation:fadeUp 0.4s ease forwards; }
+    @keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+    .delay-1 { animation-delay: 0.05s; }
+    .delay-2 { animation-delay: 0.12s; }
+    .delay-3 { animation-delay: 0.19s; }
+    .delay-4 { animation-delay: 0.26s; }
+
+    th.sortable { cursor:pointer; user-select:none; white-space:nowrap; }
+    th.sortable:hover { color: var(--color-primary); }
+    th.sort-asc  .sort-icon::after { content:" ↑"; color: var(--color-primary); }
+    th.sort-desc .sort-icon::after { content:" ↓"; color: var(--color-primary); }
+    th:not(.sort-asc):not(.sort-desc) .sort-icon::after { content:" ↕"; opacity:0.3; font-size:10px; }
+
+    tr.data-row:hover td { background: color-mix(in oklch, var(--color-primary) 5%, transparent); }
+    tr.data-row { transition: background 0.12s; }
+
+    #theme-dropdown-panel {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 0; right: 0;
+      z-index: 100;
+    }
+    #theme-dropdown-panel.open { display: block; }
+
+    .date-range-row { display:none; }
+    .date-range-row.visible { display:flex; }
+  </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="bg-base-200">
+
+<div class="drawer lg:drawer-open min-h-screen">
+  <input id="sidebar-toggle" type="checkbox" class="drawer-toggle" />
+
+    <div class="drawer-content flex flex-col min-w-0 {% block body_classes %}min-h-screen grid-bg{% endblock %}">
+
+        {% block navbar_slot %}
+      {% include "backoffice/partials/navbar.html" %}
+    {% endblock %}
+
+        {% block main_slot %}
+      <main class="flex-1 p-4 md:p-6 max-w-[1400px] mx-auto w-full">
+
+                {% block page_header %}
+          <div class="fade-in delay-1 mb-6">
+            <h1 class="text-2xl font-bold text-base-content">{% block page_heading %}{% endblock %}</h1>
+            {% block page_subheading %}{% endblock %}
+          </div>
+        {% endblock %}
+
+                {% block content %}{% endblock %}
+
+      </main>
+    {% endblock %}
+
+  </div>
+
+    {% include "backoffice/partials/sidebar.html" %}
+
+</div>
+
+{% include "backoffice/partials/theme_js.html" %}
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

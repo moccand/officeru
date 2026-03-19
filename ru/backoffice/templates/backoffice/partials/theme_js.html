@@ -1,0 +1,71 @@
+<script>
+// ══════════════════════════════════════════════════════════════
+// THÈMES RU — persisté en session Django via POST /set-theme/
+// ══════════════════════════════════════════════════════════════
+const RU_THEMES = [
+  { id: 'light',      label: 'Clair',     desc: 'Thème par défaut',               icon: '☀️' },
+  { id: 'dark',       label: 'Sombre',    desc: 'Interface en mode sombre',        icon: '🌙' },
+  { id: 'colorblind', label: 'Daltonien', desc: 'Bleu & orange — haut contraste',  icon: '♿' }
+];
+
+let themePickerOpen = false;
+
+function buildThemeList() {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  document.getElementById('theme-list').innerHTML = RU_THEMES.map(t => {
+    const active = t.id === current;
+    return `
+      <button onclick="setTheme('${t.id}')"
+        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors text-sm
+               ${active ? 'bg-primary/10 border border-primary/20' : 'hover:bg-base-200 border border-transparent'}">
+        <span class="text-base leading-none">${t.icon}</span>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold leading-tight ${active ? 'text-primary' : 'text-base-content'}">${t.label}</p>
+          <p class="text-[11px] leading-tight mt-0.5 ${active ? 'text-primary/60' : 'text-base-content/40'}">${t.desc}</p>
+        </div>
+        ${active ? '<svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>' : ''}
+      </button>`;
+  }).join('');
+}
+
+function setTheme(id) {
+  // 1. Appliquer immédiatement sans rechargement
+  document.documentElement.setAttribute('data-theme', id);
+  const t = RU_THEMES.find(x => x.id === id) || RU_THEMES[0];
+  document.getElementById('sidebar-theme-label').textContent = t.label;
+  buildThemeList();
+
+  // 2. Persister côté serveur en session Django
+  fetch("{% url 'backoffice:set_theme' %}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': '{{ csrf_token }}'
+    },
+    body: JSON.stringify({ theme: id })
+  });
+}
+
+function toggleThemePicker() {
+  themePickerOpen = !themePickerOpen;
+  document.getElementById('theme-dropdown-panel').classList.toggle('open', themePickerOpen);
+  document.getElementById('theme-chevron').style.transform = themePickerOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+document.addEventListener('click', e => {
+  const c = document.getElementById('theme-picker-container');
+  if (c && !c.contains(e.target)) {
+    themePickerOpen = false;
+    document.getElementById('theme-dropdown-panel').classList.remove('open');
+    document.getElementById('theme-chevron').style.transform = 'rotate(0deg)';
+  }
+});
+
+// Initialiser le label au chargement
+(function() {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  const t = RU_THEMES.find(x => x.id === current);
+  if (t) document.getElementById('sidebar-theme-label').textContent = t.label;
+  buildThemeList();
+})();
+</script>

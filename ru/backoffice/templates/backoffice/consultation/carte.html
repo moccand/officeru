@@ -1,0 +1,411 @@
+{% extends "backoffice/layouts/base.html" %}
+
+{% block body_classes %}h-screen overflow-hidden{% endblock %}
+
+{% block page_title %}Carte — Consultation{% endblock %}
+
+{% block navbar_slot %}
+  <nav class="navbar bg-base-100/90 backdrop-blur-md border-b border-base-300 sticky top-0 z-30 px-4 shadow-sm min-h-14 shrink-0">
+
+        <div class="flex-none lg:hidden mr-1">
+      <label for="sidebar-toggle" class="btn btn-square btn-ghost btn-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="size-5 stroke-current">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </label>
+    </div>
+
+        <div class="flex-1 px-1">
+      <div class="breadcrumbs text-sm py-0">
+        <ul>
+          <li><span class="text-base-content/40">Consultation</span></li>
+          <li><span class="text-base-content font-semibold">Carte</span></li>
+        </ul>
+      </div>
+    </div>
+
+        <div class="flex-none flex items-center gap-3">
+      
+                <div class="dropdown dropdown-end">
+          <div tabindex="0" class="w-8 h-8 rounded-full bg-primary flex items-center justify-center cursor-pointer ring-2 ring-primary ring-offset-1 ring-offset-base-100">
+            <span class="text-primary-content font-bold text-xs">
+              {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+            </span>
+          </div>
+          <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-50 w-44 p-2 shadow-xl border border-base-200 mt-2 text-sm">
+            <li class="menu-title text-xs text-base-content/40">{{ request.user.get_full_name|default:request.user.username }}</li>
+            <li></li>
+            <li><hr class="my-1 border-base-200"/></li>
+            <li>
+              
+            </li>
+          </ul>
+        </div>
+      
+    </div>
+  </nav>
+{% endblock %}
+
+{% block main_slot %}
+  <div class="flex-1 relative min-h-0">
+    <div id="map" class="absolute inset-0"></div>
+
+        <div class="absolute z-30 w-96" style="top: 8px; left: 50px;">
+
+      <div id="search-bar"
+        class="flex items-center gap-2 px-3 py-2.5 bg-base-100 rounded-xl shadow-lg border border-base-200 transition-all">
+
+                <div class="relative shrink-0" id="search-mode-container">
+          <button id="search-mode-btn" onclick="toggleModeMenu()" title="Choisir le type de recherche"
+            class="flex items-center justify-center w-7 h-7 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
+            <svg id="search-mode-icon" xmlns="http://www.w3.org/2000/svg" class="size-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+            </svg>
+          </button>
+          <div id="mode-menu" class="hidden absolute top-full left-0 mt-1.5 w-48 bg-base-100 border border-base-200 rounded-xl shadow-lg overflow-hidden z-50">
+            <button onclick="setSearchMode('adresse')" id="mode-opt-adresse"
+              class="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-medium hover:bg-base-200 transition-colors text-left">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <span class="text-base-content">Adresse</span>
+              <svg id="check-adresse" xmlns="http://www.w3.org/2000/svg" class="size-3 text-primary ml-auto shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            </button>
+            <hr class="border-base-200 mx-3"/>
+            <button onclick="setSearchMode('parcelle')" id="mode-opt-parcelle"
+              class="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-medium hover:bg-base-200 transition-colors text-left text-base-content/40 cursor-not-allowed">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-base-content/30 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 9m0 8V9m0 0L9 7"/></svg>
+              <span>N° Parcelle</span>
+              <span class="ml-auto text-[10px] italic text-base-content/30 shrink-0">à venir</span>
+            </button>
+          </div>
+        </div>
+
+        <input id="ban-input" type="text" autocomplete="off"
+          class="grow bg-transparent text-sm text-base-content placeholder:text-base-content/30 min-w-0"
+          style="outline:none;box-shadow:none;border:none;"
+          placeholder="Adresse parisienne…" />
+        <div id="ban-spinner" class="hidden loading loading-spinner loading-xs text-primary shrink-0"></div>
+        <button id="ban-clear" onclick="clearSearch()"
+          class="hidden btn btn-ghost btn-xs btn-circle text-base-content/30 hover:text-base-content shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div id="ban-suggestions" class="mt-1 bg-base-100 border border-base-200 rounded-xl shadow-lg overflow-hidden hidden"></div>
+    </div>
+
+        <div class="absolute right-4 z-20 flex flex-col gap-3 w-72" style="top: calc(4rem + 16px);">
+
+            <div class="card bg-base-100/90 backdrop-blur-md border border-base-200 shadow-lg overflow-hidden">
+        <button onclick="togglePanel('panel-carte')" class="w-full flex items-center gap-2.5 px-4 py-3 hover:bg-base-200/50 transition-colors">
+          <div class="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 9m0 8V9m0 0L9 7"/></svg>
+          </div>
+          <div class="flex-1 text-left">
+            <p class="text-sm font-semibold text-base-content leading-tight">Carte cadastrale</p>
+            <p class="text-[11px] text-base-content/40">Vue visiteur</p>
+          </div>
+          <svg id="chevron-carte" xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-base-content/30 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div id="panel-carte" class="px-4 pb-4 border-t border-base-200">
+          <p class="text-xs text-base-content/60 leading-relaxed mt-3">Cliquez sur une parcelle pour afficher ses informations.</p>
+          
+        </div>
+      </div>
+
+            <div class="card bg-base-100/90 backdrop-blur-md border border-base-200 shadow-lg overflow-hidden">
+        <button onclick="togglePanel('panel-couches')" class="w-full flex items-center gap-2.5 px-4 py-3 hover:bg-base-200/50 transition-colors">
+          <div class="w-7 h-7 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          </div>
+          <div class="flex-1 text-left">
+            <p class="text-sm font-semibold text-base-content leading-tight">Gestion des couches</p>
+            <p class="text-[11px] text-base-content/40">Fond de carte</p>
+          </div>
+          <svg id="chevron-couches" xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-base-content/30 transition-transform duration-200 -rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div id="panel-couches" class="hidden px-4 pb-4 border-t border-base-200">
+          <p class="text-[10px] uppercase tracking-widest text-base-content/30 font-semibold mt-3 mb-2">Fond de carte</p>
+          <div class="flex flex-col gap-1.5">
+            <label class="flex items-center gap-2.5 cursor-pointer">
+              <input type="radio" name="basemap" value="osm" checked onchange="setBasemap('osm')" class="radio radio-primary radio-xs"/>
+              <div class="flex items-center gap-2 flex-1">
+                <div class="w-8 h-6 rounded border border-base-300 bg-gradient-to-br from-green-100 to-blue-100 shrink-0"></div>
+                <span class="text-xs font-medium">OpenStreetMap</span>
+              </div>
+            </label>
+            <label class="flex items-center gap-2.5 cursor-pointer">
+              <input type="radio" name="basemap" value="satellite" onchange="setBasemap('satellite')" class="radio radio-primary radio-xs"/>
+              <div class="flex items-center gap-2 flex-1">
+                <div class="w-8 h-6 rounded border border-base-300 bg-gradient-to-br from-gray-700 to-gray-900 shrink-0"></div>
+                <span class="text-xs font-medium">Satellite (ESRI)</span>
+              </div>
+            </label>
+          </div>
+          <p class="text-[10px] uppercase tracking-widest text-base-content/30 font-semibold mt-3 mb-2">Données</p>
+          <label class="flex items-center gap-2.5 cursor-pointer">
+            <input type="checkbox" id="layer-parcelles" checked onchange="toggleParcelleLayer(this.checked)" class="checkbox checkbox-primary checkbox-xs"/>
+            <span class="text-xs">Parcelles</span>
+            <span class="ml-auto badge badge-primary badge-xs badge-soft" id="parcelles-count">7</span>
+          </label>
+        </div>
+      </div>
+
+            <div class="card bg-base-100/90 backdrop-blur-md border border-base-200 shadow-lg overflow-hidden">
+        <button onclick="togglePanel('panel-resultats')" class="w-full flex items-center gap-2.5 px-4 py-3 hover:bg-base-200/50 transition-colors">
+          <div class="w-7 h-7 rounded-lg bg-success/10 flex items-center justify-center shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          </div>
+          <div class="flex-1 text-left">
+            <p class="text-sm font-semibold text-base-content leading-tight">Résultat recherche</p>
+            <p class="text-[11px] text-base-content/40" id="result-count-label">Aucun résultat</p>
+          </div>
+          <svg id="chevron-resultats" xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-base-content/30 transition-transform duration-200 -rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div id="panel-resultats" class="hidden border-t border-base-200">
+          <div id="result-empty" class="px-4 py-4 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-7 text-base-content/15 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/></svg>
+            <p class="text-xs text-base-content/30">Lancez une recherche pour voir les résultats</p>
+          </div>
+          <div id="result-list" class="hidden max-h-48 overflow-y-auto divide-y divide-base-100"></div>
+        </div>
+      </div>
+
+    </div>
+
+        <div id="map-popup" class="absolute z-20 hidden">
+      <div class="card bg-base-100 border border-base-200 shadow-xl p-3 w-52">
+        <div class="flex items-start justify-between mb-2">
+          <p class="text-xs font-bold text-base-content" id="popup-title">—</p>
+          <button onclick="document.getElementById('map-popup').classList.add('hidden')" class="btn btn-ghost btn-xs btn-circle -mt-0.5 -mr-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <p class="text-[11px] text-base-content/50" id="popup-address">—</p>
+        
+      </div>
+    </div>
+
+  </div>
+
+{% endblock %}
+{% block extra_head %}
+  <style>
+    /* Page carte : pleine hauteur, pas de défilement */
+    body, body > .drawer { height: 100vh !important; overflow: hidden !important; }
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@10.3.1/ol.css" />
+  <script src="https://cdn.jsdelivr.net/npm/ol@10.3.1/dist/ol.js"></script>
+  <style>
+    #map { width:100%; height:100%; }
+    .ol-zoom { top:0.5em; left:0.5em; }
+    .ol-zoom .ol-zoom-in, .ol-zoom .ol-zoom-out {
+      width:2rem; height:2rem; font-size:1.1rem; line-height:2rem;
+      border-radius:0.5rem;
+      background:var(--color-base-100,#fff);
+      color:var(--color-base-content,#1f2937);
+      border:1px solid var(--color-base-300,#d1d5db);
+      box-shadow:0 1px 4px rgba(0,0,0,.12);
+    }
+    .ol-zoom .ol-zoom-in:hover, .ol-zoom .ol-zoom-out:hover {
+      background:var(--color-base-200,#f3f4f6);
+    }
+    .ol-attribution { font-size:10px; background:rgba(255,255,255,.75); backdrop-filter:blur(4px); border-radius:.375rem; padding:2px 6px; }
+  </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Panneaux accordéon ──────────────────────────────────────
+function togglePanel(id) {
+  const panel   = document.getElementById(id);
+  const key     = id.replace('panel-', '');
+  const chevron = document.getElementById('chevron-' + key);
+  const isOpen  = !panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', isOpen);
+  if (chevron) chevron.style.transform = isOpen ? 'rotate(-90deg)' : 'rotate(0deg)';
+}
+
+// ── Sélecteur de mode de recherche ──────────────────────────
+let searchMode    = 'adresse';
+let modeMenuOpen  = false;
+
+function toggleModeMenu() {
+  modeMenuOpen = !modeMenuOpen;
+  document.getElementById('mode-menu').classList.toggle('hidden', !modeMenuOpen);
+}
+function setSearchMode(mode) {
+  searchMode = mode;
+  modeMenuOpen = false;
+  document.getElementById('mode-menu').classList.add('hidden');
+  const icon = document.getElementById('search-mode-icon');
+  if (mode === 'adresse') {
+    icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>';
+    document.getElementById('ban-input').disabled = false;
+    document.getElementById('ban-input').placeholder = 'Adresse parisienne…';
+    document.getElementById('ban-input').focus();
+  } else {
+    icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 9m0 8V9m0 0L9 7"/>';
+    document.getElementById('ban-input').disabled = true;
+    document.getElementById('ban-input').placeholder = 'N° parcelle — à venir…';
+  }
+  document.getElementById('check-adresse').classList.toggle('hidden', mode !== 'adresse');
+}
+document.addEventListener('click', e => {
+  const mc = document.getElementById('search-mode-container');
+  if (mc && !mc.contains(e.target)) { modeMenuOpen = false; document.getElementById('mode-menu').classList.add('hidden'); }
+});
+
+// ── Carte OpenLayers ─────────────────────────────────────────
+const PARIS = ol.proj.fromLonLat([2.3522, 48.8566]);
+const osmLayer       = new ol.layer.Tile({ source: new ol.source.OSM(), visible: true });
+const satelliteLayer = new ol.layer.Tile({
+  source: new ol.source.XYZ({ url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', attributions: 'Tiles © Esri' }),
+  visible: false
+});
+const map = new ol.Map({
+  target: 'map',
+  layers: [osmLayer, satelliteLayer],
+  view: new ol.View({ center: PARIS, zoom: 13, minZoom: 6, maxZoom: 20 }),
+  controls: ol.control.defaults.defaults({ attribution: true, zoom: true, rotate: false })
+});
+
+const parcellesDemo = [
+  { nom:'75101 AB 0001', adresse:'1 place du Palais-Royal',      lon:2.3364, lat:48.8638 },
+  { nom:'75104 AC 0012', adresse:'4 rue de Rivoli',              lon:2.3510, lat:48.8573 },
+  { nom:'75108 BA 0034', adresse:'34 avenue des Champs-Élysées', lon:2.3097, lat:48.8698 },
+  { nom:'75112 BB 0007', adresse:'7 allée des Acacias',          lon:2.3960, lat:48.8384 },
+  { nom:'75116 CA 0021', adresse:'21 avenue Foch',               lon:2.2936, lat:48.8726 },
+  { nom:'75105 AB 0043', adresse:'43 rue Mouffetard',            lon:2.3512, lat:48.8436 },
+  { nom:'75118 AC 0009', adresse:'9 rue Lepic',                  lon:2.3376, lat:48.8852 },
+];
+document.getElementById('parcelles-count').textContent = parcellesDemo.length;
+
+const parcelleSource = new ol.source.Vector({
+  features: parcellesDemo.map(p => new ol.Feature({ geometry: new ol.geom.Point(ol.proj.fromLonLat([p.lon,p.lat])), nom:p.nom, adresse:p.adresse }))
+});
+const parcelleLayer = new ol.layer.Vector({
+  source: parcelleSource,
+  style: new ol.style.Style({ image: new ol.style.Circle({ radius:7, fill: new ol.style.Fill({color:'rgba(37,99,235,0.85)'}), stroke: new ol.style.Stroke({color:'#fff',width:2}) }) })
+});
+map.addLayer(parcelleLayer);
+
+const resultSource = new ol.source.Vector();
+const resultLayer  = new ol.layer.Vector({
+  source: resultSource, zIndex:10,
+  style: new ol.style.Style({ image: new ol.style.Circle({ radius:9, fill: new ol.style.Fill({color:'rgba(220,38,38,0.9)'}), stroke: new ol.style.Stroke({color:'#fff',width:2.5}) }) })
+});
+map.addLayer(resultLayer);
+
+function setBasemap(id) { osmLayer.setVisible(id==='osm'); satelliteLayer.setVisible(id==='satellite'); }
+function toggleParcelleLayer(v) { parcelleLayer.setVisible(v); }
+function placeResultMarker(lon, lat, label) {
+  resultSource.clear();
+  resultSource.addFeature(new ol.Feature({ geometry: new ol.geom.Point(ol.proj.fromLonLat([lon,lat])), nom:label, adresse:'' }));
+}
+
+map.on('click', evt => {
+  const f = map.forEachFeatureAtPixel(evt.pixel, x => x);
+  if (f && f.get('nom')) {
+    const popup = document.getElementById('map-popup');
+    popup.style.left = (evt.pixel[0]+12)+'px';
+    popup.style.top  = (evt.pixel[1]-10)+'px';
+    document.getElementById('popup-title').textContent   = f.get('nom');
+    document.getElementById('popup-address').textContent = f.get('adresse')||'';
+    popup.classList.remove('hidden');
+  } else { document.getElementById('map-popup').classList.add('hidden'); }
+});
+map.on('pointermove', evt => { map.getTargetElement().style.cursor = map.hasFeatureAtPixel(evt.pixel) ? 'pointer' : ''; });
+document.getElementById('sidebar-toggle').addEventListener('change', () => setTimeout(()=>map.updateSize(),300));
+
+// ── Recherche BAN ────────────────────────────────────────────
+const GEO_API = 'https://api-adresse.data.gouv.fr/search/';
+let banDebounce=null, banController=null, currentResults=[];
+const banInput       = document.getElementById('ban-input');
+const banSuggestions = document.getElementById('ban-suggestions');
+const banClear       = document.getElementById('ban-clear');
+const banSpinner     = document.getElementById('ban-spinner');
+
+banInput.addEventListener('input', () => {
+  const q = banInput.value.trim();
+  banClear.classList.toggle('hidden', q.length===0);
+  if (q.length<3) { hideSuggestions(); return; }
+  clearTimeout(banDebounce);
+  banDebounce = setTimeout(()=>fetchBAN(q), 280);
+});
+banInput.addEventListener('keydown', e => {
+  if (e.key==='Escape') clearSearch();
+  if (e.key==='ArrowDown') { focusSuggestion(0); e.preventDefault(); }
+});
+
+async function fetchBAN(q) {
+  if (banController) banController.abort();
+  banController = new AbortController();
+  banSpinner.classList.remove('hidden');
+  try {
+    const params = new URLSearchParams({ q, limit:10, type:'housenumber' });
+    const resp = await fetch(`${GEO_API}?${params}`, { signal: banController.signal });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    const features = (data.features||[]).slice(0,5);
+    currentResults = features;
+    renderSuggestions(features);
+  } catch(err) {
+    if (err.name!=='AbortError') {
+      banSuggestions.innerHTML='<div class="px-4 py-3 text-xs text-error/70 text-center">Erreur de connexion au service</div>';
+      banSuggestions.classList.remove('hidden');
+    }
+  } finally { banSpinner.classList.add('hidden'); }
+}
+
+function renderSuggestions(features) {
+  if (!features.length) {
+    banSuggestions.innerHTML='<div class="px-4 py-3 text-xs text-base-content/40 text-center">Aucune adresse trouvée</div>';
+    banSuggestions.classList.remove('hidden'); return;
+  }
+  banSuggestions.innerHTML = features.map((f,i)=>{
+    const p=f.properties, pc=p.postcode||'', arrNum=pc?parseInt(pc.slice(-2),10):0, arr=arrNum?arrNum+'e arr.':'';
+    return `<button data-idx="${i}" class="suggestion-item w-full flex items-start gap-2.5 px-4 py-2.5 hover:bg-base-200 transition-colors text-left focus:bg-base-200 outline-none"
+      onclick="selectSuggestion(${i})" onkeydown="navSuggestion(event,${i},${features.length})">
+      <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-primary shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <div class="min-w-0"><p class="text-xs font-medium text-base-content truncate">${p.label}</p><p class="text-[11px] text-base-content/40">${arr}</p></div>
+    </button>`;
+  }).join('');
+  banSuggestions.classList.remove('hidden');
+}
+
+function selectSuggestion(idx) {
+  const f=currentResults[idx]; if(!f) return;
+  const p=f.properties, lon=f.geometry.coordinates[0], lat=f.geometry.coordinates[1];
+  banInput.value=p.label; banClear.classList.remove('hidden'); hideSuggestions();
+  map.getView().animate({center:ol.proj.fromLonLat([lon,lat]),zoom:17,duration:600});
+  placeResultMarker(lon,lat,p.label);
+  const pc=p.postcode||'', arrNum=pc?parseInt(pc.slice(-2),10):0;
+  const arr=arrNum?arrNum+'e arrondissement':'Paris';
+  document.getElementById('result-count-label').textContent='1 résultat';
+  document.getElementById('result-empty').classList.add('hidden');
+  const list=document.getElementById('result-list'); list.classList.remove('hidden');
+  list.innerHTML=`<div class="px-4 py-3 flex items-start gap-3">
+    <div class="w-7 h-7 rounded-lg bg-error/10 flex items-center justify-center shrink-0 mt-0.5"><svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
+    <div class="flex-1 min-w-0"><p class="text-xs font-semibold text-base-content leading-snug">${p.label}</p><p class="text-[11px] text-base-content/40 mt-0.5">${arr}</p><p class="text-[10px] text-base-content/30 mt-0.5 font-mono">${lon.toFixed(5)}, ${lat.toFixed(5)}</p></div>
+  </div>`;
+  const panel=document.getElementById('panel-resultats');
+  if (panel.classList.contains('hidden')) togglePanel('panel-resultats');
+}
+
+function hideSuggestions() { banSuggestions.classList.add('hidden'); banSuggestions.innerHTML=''; }
+function clearSearch() {
+  banInput.value=''; banClear.classList.add('hidden'); hideSuggestions(); resultSource.clear();
+  document.getElementById('result-count-label').textContent='Aucun résultat';
+  document.getElementById('result-empty').classList.remove('hidden');
+  document.getElementById('result-list').classList.add('hidden');
+}
+function navSuggestion(e,idx,total) {
+  if (e.key==='ArrowDown') { document.querySelector(`[data-idx="${idx+1}"]`)?.focus(); e.preventDefault(); }
+  else if (e.key==='ArrowUp') { idx===0?banInput.focus():document.querySelector(`[data-idx="${idx-1}"]`)?.focus(); e.preventDefault(); }
+  else if (e.key==='Enter') selectSuggestion(idx);
+  else if (e.key==='Escape') { clearSearch(); banInput.focus(); }
+}
+function focusSuggestion(idx) { document.querySelector(`[data-idx="${idx}"]`)?.focus(); }
+document.addEventListener('click', e => { const sb=document.getElementById('search-bar'); if(sb&&!sb.closest('div').contains(e.target)) hideSuggestions(); });
+</script>
+{% endblock %}

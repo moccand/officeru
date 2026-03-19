@@ -1,0 +1,181 @@
+{% load backoffice_tags %}
+
+<div class="drawer-side z-40">
+  <label for="sidebar-toggle" aria-label="Fermer le menu" class="drawer-overlay"></label>
+  <aside class="min-h-full w-64 bg-base-100 border-r border-base-200 flex flex-col">
+
+        <div class="px-5 py-4 border-b border-base-200">
+      <a href="{% url 'backoffice:consultation_carte' %}" class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-primary-content" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="font-bold text-base text-base-content leading-tight">RU</p>
+          <p class="text-[11px] text-base-content/40 leading-tight mt-0.5">Renseignement d'urbanisme</p>
+        </div>
+      </a>
+    </div>
+
+        <nav class="flex-1 px-3 py-4 overflow-y-auto">
+
+            <p class="text-[10px] uppercase tracking-widest text-base-content/30 px-3 mb-1.5 font-semibold">Consultation</p>
+      <ul class="menu menu-sm gap-0.5 p-0 mb-5">
+        <li>
+          <a href="{% url 'backoffice:consultation_carte' %}"
+            class="{% if active_page == 'consultation:carte' %}active-nav{% endif %} rounded-lg hover:bg-base-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 9m0 8V9m0 0L9 7"/></svg>
+            Carte
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'backoffice:consultation_parcelles' %}"
+            class="{% if active_page == 'consultation:parcelles' %}active-nav{% endif %} rounded-lg hover:bg-base-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/></svg>
+            Parcelles
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'backoffice:consultation_troncons' %}"
+            class="{% if active_page == 'consultation:troncons' %}active-nav{% endif %} rounded-lg hover:bg-base-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+            Tronçons
+          </a>
+        </li>
+      </ul>
+
+            <p class="text-[10px] uppercase tracking-widest text-base-content/30 px-3 mb-1.5 font-semibold">Gestion</p>
+      <ul class="menu menu-sm gap-0.5 p-0 mb-5">
+        <li>
+          <a href="{% url 'backoffice:gestion_mutations' %}"
+            class="{% if active_page == 'gestion:mutations' %}active-nav{% endif %} rounded-lg hover:bg-base-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+            Mutations
+            {% menu_alert menu_alerts "gestion:mutations" %}
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'backoffice:gestion_parcelles' %}"
+            class="{% if active_page == 'gestion:parcelles' %}active-nav{% endif %} rounded-lg hover:bg-base-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064"/></svg>
+            Parcelles
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'backoffice:gestion_troncons' %}"
+            class="{% if active_page == 'gestion:troncons' %}active-nav{% endif %} rounded-lg hover:bg-base-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+            Tronçons
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'backoffice:gestion_voies' %}"
+            class="{% if active_page == 'gestion:voies' %}active-nav{% endif %} rounded-lg hover:bg-base-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Référentiel des Voies
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'backoffice:gestion_regles' %}"
+            class="{% if active_page == 'gestion:regles' %}active-nav{% endif %} rounded-lg hover:bg-base-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+            Règles
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'backoffice:gestion_listes_valeurs' %}"
+            class="{% if active_page == 'gestion:listes_valeurs' %}active-nav{% endif %} rounded-lg hover:bg-base-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h12M4 18h8"/></svg>
+            Listes de Valeurs des Règles
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'backoffice:gestion_analyse_referentiels' %}"
+            class="{% if active_page == 'gestion:analyse_referentiels' %}active-nav{% endif %} rounded-lg hover:bg-base-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            Analyse des Référentiels
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'backoffice:gestion_details' %}"
+            class="{% if active_page == 'gestion:details' %}active-nav{% endif %} rounded-lg hover:bg-base-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            Détails
+          </a>
+        </li>
+      </ul>
+
+            <p class="text-[10px] uppercase tracking-widest text-base-content/30 px-3 mb-1.5 font-semibold">Export</p>
+      <ul class="menu menu-sm gap-0.5 p-0 mb-5">
+        <li>
+          <a href="{% url 'backoffice:export_exports_internet' %}"
+            class="{% if active_page == 'export:exports_internet' %}active-nav{% endif %} rounded-lg hover:bg-base-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            Exports Internet
+          </a>
+        </li>
+      </ul>
+
+            <p class="text-[10px] uppercase tracking-widest text-base-content/30 px-3 mb-1.5 font-semibold">Administration</p>
+      <ul class="menu menu-sm gap-0.5 p-0 mb-5">
+        <li>
+          <a href="{% url 'backoffice:administration_utilisateurs' %}"
+            class="{% if active_page == 'administration:utilisateurs' %}active-nav{% endif %} rounded-lg hover:bg-base-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Utilisateurs
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'backoffice:administration_configuration' %}"
+            class="{% if active_page == 'administration:configuration' %}active-nav{% endif %} rounded-lg hover:bg-base-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Configuration
+          </a>
+        </li>
+      </ul>
+
+            <p class="text-[10px] uppercase tracking-widest text-base-content/30 px-3 mb-1.5 font-semibold">API</p>
+      <ul class="menu menu-sm gap-0.5 p-0">
+        <li>
+          <a href="{% url 'backoffice:api_swagger' %}"
+            class="{% if active_page == 'api:swagger' %}active-nav{% endif %} rounded-lg hover:bg-base-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+            Swagger
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'backoffice:api_configuration' %}"
+            class="{% if active_page == 'api:configuration' %}active-nav{% endif %} rounded-lg hover:bg-base-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Configuration de l'API
+          </a>
+        </li>
+      </ul>
+
+    </nav>
+
+        <div class="px-4 py-3 border-t border-base-200 space-y-2">
+      <div class="relative" id="theme-picker-container">
+        <div id="theme-dropdown-panel" class="bg-base-100 border border-base-200 rounded-box shadow-xl p-3">
+          <p class="text-[10px] uppercase tracking-widest text-base-content/30 mb-2 font-semibold px-1">Apparence</p>
+          <div id="theme-list" class="flex flex-col gap-1"></div>
+        </div>
+        <button id="theme-picker-btn" onclick="toggleThemePicker()"
+          class="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-base-300 bg-base-100 hover:bg-base-200 transition-colors text-sm">
+          <div class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+            </svg>
+            <span class="font-medium text-base-content/70 text-sm">Thème : <span id="sidebar-theme-label">Clair</span></span>
+          </div>
+          <svg id="theme-chevron" xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-base-content/30 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+          </svg>
+        </button>
+      </div>
+      <p class="text-xs text-base-content/30 font-medium px-1">RU v2.0</p>
+    </div>
+
+  </aside>
+</div>
