@@ -1,0 +1,221 @@
+<script>
+let voieDebounce   = null;
+let voieController = null;
+
+const voieSearch  = document.getElementById('id_voie_search');
+const voieHidden  = document.getElementById('id_voie_hidden');
+const voieSugg    = document.getElementById('voie-suggestions');
+const voieSpinner = document.getElementById('voie-spinner');
+const voieClear   = document.getElementById('voie-clear');
+
+(function initVoie() {
+  if (!voieSearch) return;
+  const label = document.getElementById('voie-selected-label');
+  const info  = document.getElementById('voie-selected-info');
+  if (voieHidden && voieHidden.value) {
+    if (label) voieSearch.value = label.textContent;
+    if (voieClear) voieClear.classList.remove('hidden');
+    if (info) info.classList.remove('hidden');
+  }
+})();
+
+if (voieSearch) {
+  voieSearch.addEventListener('input', () => {
+    const q = voieSearch.value.trim();
+    if (voieClear) voieClear.classList.toggle('hidden', !q);
+    if (q.length < 2) { cacherSuggestionsVoie(); return; }
+    clearTimeout(voieDebounce);
+    voieDebounce = setTimeout(() => rechercherVoies(q), 250);
+  });
+  voieSearch.addEventListener('keydown', e => {
+    if (e.key === 'Escape') clearVoie();
+    if (e.key === 'ArrowDown') {
+      const first = voieSugg.querySelector('[role="option"]');
+      if (first) { first.focus(); e.preventDefault(); }
+    }
+  });
+}
+
+async function rechercherVoies(q) {
+  if (voieController) voieController.abort();
+  voieController = new AbortController();
+  if (voieSpinner) voieSpinner.classList.remove('hidden');
+  try {
+    const resp = await fetch(`/api/voies-autocomplete/?q=${encodeURIComponent(q)}`, { signal: voieController.signal });
+    const data = await resp.json();
+    afficherSuggestionsVoie(data.results || []);
+  } catch(e) {
+    if (e.name !== 'AbortError') cacherSuggestionsVoie();
+  } finally {
+    if (voieSpinner) voieSpinner.classList.add('hidden');
+  }
+}
+
+function afficherSuggestionsVoie(voies) {
+  if (!voies.length) {
+    voieSugg.innerHTML = '<div class="px-4 py-3 text-xs text-base-content/40 text-center">Aucune voie trouvée</div>';
+    voieSugg.classList.remove('hidden'); return;
+  }
+  voieSugg.innerHTML = voies.map((v, i) => `
+    <button type="button" role="option"
+      class="w-full flex items-start gap-2.5 px-4 py-2.5 hover:bg-base-200 transition-colors text-left focus:bg-base-200 outline-none"
+      onclick="selectionnerVoie(${v.id}, '${v.label.replace(/'/g,"\\'")}', '${v.codes.replace(/'/g,"\\'")}' )"
+      onkeydown="navSuggVoie(event, ${i}, ${voies.length})">
+      <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-primary shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>
+      <div class="min-w-0">
+        <p class="text-xs font-medium text-base-content truncate">${v.label}</p>
+        <p class="text-[11px] text-base-content/40">${v.codes}</p>
+      </div>
+    </button>`).join('');
+  voieSugg.classList.remove('hidden');
+}
+
+function selectionnerVoie(id, label, codes) {
+  if (voieHidden) voieHidden.value = id;
+  if (voieSearch) voieSearch.value = label;
+  if (voieClear)  voieClear.classList.remove('hidden');
+  cacherSuggestionsVoie();
+  const lbl  = document.getElementById('voie-selected-label');
+  const cds  = document.getElementById('voie-selected-codes');
+  const info = document.getElementById('voie-selected-info');
+  if (lbl)  lbl.textContent = label;
+  if (cds)  cds.textContent = codes;
+  if (info) info.classList.remove('hidden');
+}
+
+function clearVoie() {
+  if (voieSearch) voieSearch.value = '';
+  if (voieHidden) voieHidden.value = '';
+  if (voieClear)  voieClear.classList.add('hidden');
+  cacherSuggestionsVoie();
+  const info = document.getElementById('voie-selected-info');
+  if (info) info.classList.add('hidden');
+}
+
+function cacherSuggestionsVoie() { voieSugg.classList.add('hidden'); voieSugg.innerHTML = ''; }
+
+function navSuggVoie(e, idx, total) {
+  const items = Array.from(voieSugg.querySelectorAll('[role="option"]'));
+  if (e.key === 'ArrowDown') { items[idx + 1]?.focus(); e.preventDefault(); }
+  else if (e.key === 'ArrowUp') { idx === 0 ? voieSearch.focus() : items[idx - 1]?.focus(); e.preventDefault(); }
+  else if (e.key === 'Escape') { clearVoie(); voieSearch.focus(); }
+}
+
+document.addEventListener('click', e => {
+  const c = document.getElementById('voie-autocomplete-container');
+  if (c && !c.contains(e.target)) cacherSuggestionsVoie();
+});
+
+// ── Autocomplétion Parcelle ───────────────────────────────────
+
+let parcelleDebounce   = null;
+let parcelleController = null;
+
+const parcelleSearch  = document.getElementById('id_parcelle_search');
+const parcelleHidden  = document.getElementById('id_parcelle_hidden');
+const parcelleSugg    = document.getElementById('parcelle-suggestions');
+const parcelleSpinner = document.getElementById('parcelle-spinner');
+const parcelleClear   = document.getElementById('parcelle-clear');
+
+(function initParcelle() {
+  if (!parcelleSearch) return;
+  const label = document.getElementById('parcelle-selected-label');
+  const info  = document.getElementById('parcelle-selected-info');
+  if (parcelleHidden && parcelleHidden.value) {
+    if (label) parcelleSearch.value = label.textContent;
+    if (parcelleClear) parcelleClear.classList.remove('hidden');
+    if (info) info.classList.remove('hidden');
+  }
+})();
+
+if (parcelleSearch) {
+  parcelleSearch.addEventListener('input', () => {
+    const q = parcelleSearch.value.trim();
+    if (parcelleClear) parcelleClear.classList.toggle('hidden', !q);
+    if (q.length < 2) { cacherSuggestionsParcelle(); return; }
+    clearTimeout(parcelleDebounce);
+    parcelleDebounce = setTimeout(() => rechercherParcelles(q), 250);
+  });
+  parcelleSearch.addEventListener('keydown', e => {
+    if (e.key === 'Escape') clearParcelle();
+    if (e.key === 'ArrowDown') {
+      const first = parcelleSugg.querySelector('[role="option"]');
+      if (first) { first.focus(); e.preventDefault(); }
+    }
+  });
+}
+
+async function rechercherParcelles(q) {
+  if (parcelleController) parcelleController.abort();
+  parcelleController = new AbortController();
+  if (parcelleSpinner) parcelleSpinner.classList.remove('hidden');
+  try {
+    const resp = await fetch(`/api/parcelles-autocomplete/?q=${encodeURIComponent(q)}`, { signal: parcelleController.signal });
+    const data = await resp.json();
+    afficherSuggestionsParcelle(data.results || []);
+  } catch(e) {
+    if (e.name !== 'AbortError') cacherSuggestionsParcelle();
+  } finally {
+    if (parcelleSpinner) parcelleSpinner.classList.add('hidden');
+  }
+}
+
+function afficherSuggestionsParcelle(parcelles) {
+  if (!parcelles.length) {
+    parcelleSugg.innerHTML = '<div class="px-4 py-3 text-xs text-base-content/40 text-center">Aucune parcelle trouvée</div>';
+    parcelleSugg.classList.remove('hidden'); return;
+  }
+  parcelleSugg.innerHTML = parcelles.map((p, i) => `
+    <button type="button" role="option"
+      class="w-full flex items-start gap-2.5 px-4 py-2.5 hover:bg-base-200 transition-colors text-left focus:bg-base-200 outline-none"
+      onclick="selectionnerParcelle(${p.id}, '${p.label.replace(/'/g,"\\'")}', '${p.codes.replace(/'/g,"\\'")}' )"
+      onkeydown="navSuggParcelle(event, ${i}, ${parcelles.length})">
+      <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-accent shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 9m0 8V9m0 0L9 7"/>
+      </svg>
+      <div class="min-w-0">
+        <p class="text-xs font-medium text-base-content truncate">${p.label}</p>
+        <p class="text-[11px] text-base-content/40">${p.codes}</p>
+      </div>
+    </button>`).join('');
+  parcelleSugg.classList.remove('hidden');
+}
+
+function selectionnerParcelle(id, label, codes) {
+  if (parcelleHidden) parcelleHidden.value = id;
+  if (parcelleSearch) parcelleSearch.value = label;
+  if (parcelleClear)  parcelleClear.classList.remove('hidden');
+  cacherSuggestionsParcelle();
+  const lbl  = document.getElementById('parcelle-selected-label');
+  const cds  = document.getElementById('parcelle-selected-codes');
+  const info = document.getElementById('parcelle-selected-info');
+  if (lbl)  lbl.textContent = label;
+  if (cds)  cds.textContent = codes;
+  if (info) info.classList.remove('hidden');
+}
+
+function clearParcelle() {
+  if (parcelleSearch) parcelleSearch.value = '';
+  if (parcelleHidden) parcelleHidden.value = '';
+  if (parcelleClear)  parcelleClear.classList.add('hidden');
+  cacherSuggestionsParcelle();
+  const info = document.getElementById('parcelle-selected-info');
+  if (info) info.classList.add('hidden');
+}
+
+function cacherSuggestionsParcelle() { parcelleSugg.classList.add('hidden'); parcelleSugg.innerHTML = ''; }
+
+function navSuggParcelle(e, idx, total) {
+  const items = Array.from(parcelleSugg.querySelectorAll('[role="option"]'));
+  if (e.key === 'ArrowDown') { items[idx + 1]?.focus(); e.preventDefault(); }
+  else if (e.key === 'ArrowUp') { idx === 0 ? parcelleSearch.focus() : items[idx - 1]?.focus(); e.preventDefault(); }
+  else if (e.key === 'Escape') { clearParcelle(); parcelleSearch.focus(); }
+}
+
+document.addEventListener('click', e => {
+  const c = document.getElementById('parcelle-autocomplete-container');
+  if (c && !c.contains(e.target)) cacherSuggestionsParcelle();
+});
+</script>

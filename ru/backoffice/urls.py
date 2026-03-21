@@ -42,6 +42,11 @@ urlpatterns = [
          views.GestionMutationsView.as_view(),
          name='gestion_mutations'),
 
+
+     path('api/parcelles-autocomplete/',
+        views.ParcellesAutocompleteView.as_view(),
+     name='parcelles_autocomplete'),
+
     path('gestion/parcelles/',
          views.GestionParcellesView.as_view(),
          name='gestion_parcelles'),
@@ -50,9 +55,24 @@ urlpatterns = [
          views.GestionParcelleDetailView.as_view(),
          name='gestion_parcelle_detail'),
 
+    # Alignements — /ajouter/ AVANT /<int:pk>/
     path('gestion/alignements/',
          views.GestionAlignementsView.as_view(),
          name='gestion_alignements'),
+    path('gestion/alignements/ajouter/',
+         views.AlignementAjouterView.as_view(),
+         name='alignement_ajouter'),
+    path('gestion/alignements/<int:pk>/editer/',
+         views.AlignementEditView.as_view(),
+         name='alignement_edit'),
+    path('gestion/alignements/<int:pk>/supprimer/',
+         views.AlignementSupprimerView.as_view(),
+         name='alignement_supprimer'),
+
+    # Autocomplete voies — endpoint JSON pour le champ voie
+    path('api/voies-autocomplete/',
+         views.VoiesAutocompleteView.as_view(),
+         name='voies_autocomplete'),
 
     # Voies :
     path('gestion/voies/',

@@ -24,12 +24,13 @@ from django.contrib.auth.forms import AdminPasswordChangeForm
 from django.db.models import Q, Count
 
 # import des modèles pour accéder aux données
-from core.models import RuVoie
+from core.models import RuAlignement, RuVoie, RuParcelle
 
 User = get_user_model()
 
 from .forms import (
     RuVoieForm,
+    AlignementForm,
     UtilisateurCreationForm,
     UtilisateurEditionForm,
     GroupeForm,
@@ -60,6 +61,15 @@ def get_menu_alerts(request) -> dict:
     return {
         # "gestion:mutations": True,  # décommenter pour activer
     }
+
+def _alignement_breadcrumbs(extra=None):
+    crumbs = [
+        {'label': 'Gestion'},
+        {'label': 'Alignements', 'url': '/gestion/alignements/'},
+    ]
+    if extra:
+        crumbs.append(extra)
+    return crumbs
 
 
 class RuContextMixin:
@@ -153,6 +163,31 @@ class GestionMutationsView(RuContextMixin, TemplateView):
     active_page   = 'gestion:mutations'
     breadcrumbs   = [{'label': 'Gestion'}, {'label': 'Mutations'}]
 
+class ParcellesAutocompleteView(View):
+    def get(self, request):
+        q = request.GET.get('q', '').strip()
+        if len(q) < 2:
+            return JsonResponse({'results': []})
+
+
+        parcelles = (
+            RuParcelle.objects
+            .filter(
+                Q(identifiant__icontains=q)       # adapter aux vrais champs de RuParcelle
+            )
+            .values('id_parcelle', 'identifiant')  # adapter aux vrais champs
+            [:15]
+        )
+
+        results = [
+            {
+                'id':    p['id_parcelle'],
+                'label': str(p['identifiant']),
+                'codes': p.get('identifiant', ''),
+            }
+            for p in parcelles
+        ]
+        return JsonResponse({'results': results})
 
 class GestionParcellesView(RuContextMixin, TemplateView):
     """
@@ -187,35 +222,179 @@ class GestionParcelleDetailView(RuContextMixin, TemplateView):
 
 
 class GestionAlignementsView(ListView):
-    template_name = 'backoffice/gestion/alignements.html'
+    template_name       = 'backoffice/gestion/alignements.html'
     context_object_name = 'alignements'
-    paginate_by = 25
+    paginate_by         = 25
 
     def get_queryset(self):
-        from core.models import RuAlignement
-        qs = RuAlignement.objects.all().order_by('id_alignement')
+        qs = RuAlignement.objects.select_related('id_voie').order_by('id_alignement')
 
-        # Filtre sur la voie — passé en GET depuis le lien dans voies.html
+        q = self.request.GET.get('q', '').strip()
+        if q:
+            qs = qs.filter(
+                Q(adresse_debut__icontains=q) |
+                Q(adresse_fin__icontains=q)
+            )
         voie_pk = self.request.GET.get('voie', '')
         if voie_pk:
             qs = qs.filter(id_voie=voie_pk)
 
+        parite = self.request.GET.get('parite', '')
+        if parite in ('0', '1', '2'):
+            qs = qs.filter(parite=int(parite))
+
+        sort = self.request.GET.get('sort', 'id_alignement')
+        dire = self.request.GET.get('dir', 'asc')
+        cols = {'id_alignement', 'id_voie', 'numero_debut',
+                'numero_fin', 'parite', 'commune', 'date'}
+        if sort in cols:
+            qs = qs.order_by(f'-{sort}' if dire == 'desc' else sort)
         return qs
+
+    def get_paginate_by(self, qs):
+        v = self.request.GET.get('per_page', '25')
+        return int(v) if v in ('25', '50', '100') else 25
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['active_page'] = 'gestion:alignements'
-        ctx['breadcrumbs'] = [
-            {'label': 'Gestion'},
-            {'label': 'Alignements'},
-        ]
+        ctx['breadcrumbs'] = [{'label': 'Gestion'}, {'label': 'Alignements'}]
         ctx['menu_alerts'] = get_menu_alerts(self.request)
-        # Passer la voie filtrée au contexte pour l'afficher dans le titre
         voie_pk = self.request.GET.get('voie', '')
         if voie_pk:
-            from core.models import RuVoie
             ctx['voie_filtree'] = RuVoie.objects.filter(pk=voie_pk).first()
         return ctx
+
+
+class AlignementAjouterView(View):
+    template_name = 'backoffice/gestion/alignement_ajouter.html'
+
+    def _ctx(self, request, form, voie_initiale=None):
+        return {
+            'active_page':   'gestion:alignements',
+            'breadcrumbs':   _alignement_breadcrumbs({'label': 'Nouvel alignement'}),
+            'menu_alerts':   get_menu_alerts(request),
+            'form':          form,
+            'voie_initiale': voie_initiale,
+        }
+
+    def get(self, request):
+        # Pré-sélectionner la voie si passée en GET (?voie=pk)
+        voie_initiale = None
+        voie_pk = request.GET.get('voie', '')
+        if voie_pk:
+            voie_initiale = RuVoie.objects.filter(pk=voie_pk).first()
+        form = AlignementForm(initial={'id_voie': voie_pk} if voie_pk else {})
+        return render(request, self.template_name,
+                      self._ctx(request, form, voie_initiale))
+
+    def post(self, request):
+        form = AlignementForm(request.POST)
+        if form.is_valid():
+            alignement = form.save()
+            messages.success(
+                request,
+                f'Alignement {alignement.id_alignement} créé avec succès.'
+            )
+            # Redirection vers la page d'édition, onglet Règles actif
+            return redirect(
+                f"{reverse('backoffice:alignement_edit', args=[alignement.pk])}?onglet=regles"
+            )
+        messages.error(request, 'Veuillez corriger les erreurs.')
+        voie_initiale = None
+        voie_pk = request.POST.get('id_voie', '')
+        if voie_pk:
+            voie_initiale = RuVoie.objects.filter(pk=voie_pk).first()
+        return render(request, self.template_name,
+                      self._ctx(request, form, voie_initiale))
+
+
+class AlignementEditView(View):
+    template_name = 'backoffice/gestion/alignement_edit.html'
+
+    def _ctx(self, request, alignement, form, onglet):
+        return {
+            'active_page': 'gestion:alignements',
+            'breadcrumbs': _alignement_breadcrumbs(
+                {'label': f'Alignement {alignement.id_alignement}'}
+            ),
+            'menu_alerts':  get_menu_alerts(request),
+            'alignement':   alignement,
+            'form':         form,
+            'onglet_actif': onglet,
+        }
+
+    def _get_onglet(self, request):
+        onglet = request.GET.get('onglet', 'alignement')
+        return onglet if onglet in ('alignement', 'regles') else 'alignement'
+
+    def get(self, request, pk):
+        alignement = get_object_or_404(RuAlignement, pk=pk)
+        onglet     = self._get_onglet(request)
+        form       = AlignementForm(instance=alignement)
+        return render(request, self.template_name,
+                      self._ctx(request, alignement, form, onglet))
+
+    def post(self, request, pk):
+        alignement = get_object_or_404(RuAlignement, pk=pk)
+        onglet     = self._get_onglet(request)
+        form       = AlignementForm(request.POST, instance=alignement)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request,
+                f'Alignement {alignement.id_alignement} modifié avec succès.'
+            )
+            return redirect(
+                f"{reverse('backoffice:alignement_edit', args=[pk])}?onglet={onglet}"
+            )
+        messages.error(request, 'Veuillez corriger les erreurs.')
+        return render(request, self.template_name,
+                      self._ctx(request, alignement, form, onglet))
+
+
+class AlignementSupprimerView(View):
+    def post(self, request, pk):
+        alignement = get_object_or_404(RuAlignement, pk=pk)
+        id_a = alignement.id_alignement
+        alignement.delete()
+        messages.success(request, f'Alignement {id_a} supprimé.')
+        return redirect('backoffice:gestion_alignements')
+
+
+class VoiesAutocompleteView( View):
+    """
+    Endpoint JSON pour l'autocomplétion du champ Voie.
+    GET /api/voies-autocomplete/?q=rue+de
+    Retourne : {"results": [{"id": 1, "label": "Rue de Bercy", "codes": "7512 — 3456"}]}
+    """
+    def get(self, request):
+        q = request.GET.get('q', '').strip()
+        if len(q) < 2:
+            return JsonResponse({'results': []})
+
+        voies = (
+            RuVoie.objects
+            .filter(
+                Q(libelle_long__icontains=q)     |
+                Q(libelle_court__icontains=q)    |
+                Q(code_voie_rivoli__icontains=q) |
+                Q(code_voie_ville__icontains=q)
+            )
+            .values('id_voie', 'libelle_long', 'code_voie_ville', 'code_voie_rivoli')
+            [:15]
+        )
+
+        results = [
+            {
+                'id':    v['id_voie'],
+                'label': v['libelle_long'] or str(v['id_voie']),
+                'codes': f"{v['code_voie_ville']} — {v['code_voie_rivoli']}",
+            }
+            for v in voies
+        ]
+        return JsonResponse({'results': results})
+
 
 class GestionVoiesView(ListView):
     template_name       = 'backoffice/gestion/voies.html'

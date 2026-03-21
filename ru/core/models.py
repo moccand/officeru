@@ -1,6 +1,5 @@
 from django.db import models
 
-
 class RuParcelle(models.Model):
 
     class Statut(models.TextChoices):
@@ -74,7 +73,7 @@ class RuAlignement(models.Model):
         db_column='id_voie',
         related_name='alignements'
     )
-    parite = models.SmallIntegerField(null=True, blank=True)
+    parite = models.BooleanField(default=False)
     id_parcelle = models.ForeignKey(
         RuParcelle,
         on_delete=models.SET_DEFAULT,

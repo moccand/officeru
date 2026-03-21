@@ -2,11 +2,15 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.auth.forms import UserCreationForm
-from core.models import RuVoie
 
+from core.models import RuVoie, RuAlignement
 from backoffice.models import GroupProfile
 
 User = get_user_model()
+
+COMMUNES_PARIS = [(i, f'750{str(i-75100).zfill(2)}')
+                  for i in range(75101, 75121)]
+
 
 class RuVoieForm(forms.ModelForm):
     class Meta:
@@ -69,3 +73,33 @@ class GroupeForm(forms.ModelForm):
                 defaults={'description': self.cleaned_data.get('description', '')}
             )
         return group
+
+
+
+class AlignementForm(forms.ModelForm):
+
+    commune = forms.ChoiceField(
+        choices=[('', '— Sélectionner —')] + [(str(c[0]), c[1]) for c in COMMUNES_PARIS],
+        required=False,
+    )
+
+    parite = forms.ChoiceField(
+        choices=[
+            ('', '— Sélectionner —'),
+            ('False', 'Impair'),
+            ('True',  'Pair'),
+        ],
+        required=False,
+    )
+
+
+    class Meta:
+        model  = RuAlignement
+        fields = [
+            'id_voie', 'id_parcelle',
+            'numero_debut', 'adresse_debut',
+            'suffixe_un_debut', 'suffixe_2_debut', 'suffixe_3_debut',
+            'numero_fin', 'adresse_fin',
+            'suffixe_un_fin', 'suffixe_2_fin', 'suffixe_3_fin',
+            'parite', 'commune', 'date',
+        ]
