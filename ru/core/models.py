@@ -2,6 +2,12 @@ from django.db import models
 
 
 class RuParcelle(models.Model):
+
+    class Statut(models.TextChoices):
+        A_VALIDER = 'A_VALIDER', 'À valider'
+        ACTIVE    = 'ACTIVE',    'Active'
+        ARCHIVEE  = 'ARCHIVEE',  'Archivée'
+
     id_parcelle = models.IntegerField(primary_key=True)
     identifiant = models.CharField(max_length=50, default='')
     dep = models.IntegerField(default=0)
@@ -11,6 +17,11 @@ class RuParcelle(models.Model):
     numero = models.CharField(max_length=50, default='')
     m2_dgfip = models.IntegerField(default=0)
     enclave = models.SmallIntegerField(null=True, blank=True)
+    statut = models.CharField(
+        max_length=20,
+        choices=Statut.choices,
+        default=Statut.A_VALIDER,
+    )
     date = models.DateField(null=True, blank=True)
 
     class Meta:
@@ -27,11 +38,11 @@ class RuParcelle(models.Model):
 
 class RuVoie(models.Model):
     id_voie = models.IntegerField(primary_key=True)
-    libelle_long = models.TextField(null=True, blank=True)
-    libelle_court = models.TextField(null=True, blank=True)
-    code_voie_rivoli = models.CharField(max_length=50, default='')
-    code_voie_ville = models.CharField(max_length=50, default='')
-    voie_privee = models.SmallIntegerField(null=True, blank=True)
+    libelle_long = models.TextField(null=False, blank=False)
+    libelle_court = models.TextField(null=False, blank=False)
+    code_voie_rivoli = models.CharField(max_length=10, default='', null=False, blank=False)
+    code_voie_ville = models.CharField(max_length=10, default='', null=False, blank=False)
+    voie_privee =  models.BooleanField(default=False)
     date = models.DateField(null=True, blank=True)
 
     class Meta:
@@ -58,7 +69,7 @@ class RuAlignement(models.Model):
     suffixe_3_fin = models.CharField(max_length=50, default='')
     id_voie = models.ForeignKey(
         RuVoie,
-        on_delete=models.SET_DEFAULT,
+        on_delete=models.PROTECT, # ← Django lève une ProtectedError si on tente de supprimer
         default=0,
         db_column='id_voie',
         related_name='alignements'

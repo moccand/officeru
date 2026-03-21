@@ -1,0 +1,138 @@
+{% extends "backoffice/layouts/base.html" %}
+
+{% block page_title %}Édition — {{ voie.libelle_long|default:voie.pk }}{% endblock %}
+
+{% block page_heading %}Édition d'une voie{% endblock %}
+
+{% block page_subheading %}
+  <p class="text-sm text-base-content/40 mt-0.5">
+    Modification de la voie <span class="font-medium text-base-content">{{ voie.libelle_long|default:voie.pk }}</span>
+  </p>
+{% endblock %}
+
+{% block content %}
+
+  <form method="post" action="" class="space-y-5 fade-in delay-1 max-w-3xl">
+    {% csrf_token %}
+
+    {% if form.errors %}
+      <div class="alert alert-error alert-soft">
+        <svg xmlns="http://www.w3.org/2000/svg" class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        </svg>
+        <span>Veuillez corriger les erreurs ci-dessous avant d'enregistrer.</span>
+      </div>
+    {% endif %}
+
+    <div class="card bg-base-100 border border-base-200 shadow-sm">
+
+      <div class="px-6 py-4 border-b border-base-200">
+        <p class="text-sm font-semibold text-base-content">Informations de la voie</p>
+        {% block card_subtitle %}<p class="text-xs text-base-content/40 mt-0.5">ID voie : {{ voie.pk }}</p>{% endblock %}
+      </div>
+
+      <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <div class="md:col-span-2">
+          <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+            Libellé long
+          </label>
+          <input type="text" name="libelle_long"
+            value="{{ form.libelle_long.value|default:'' }}"
+            class="input input-bordered w-full text-sm {% if form.libelle_long.errors %}input-error{% endif %}"
+            placeholder="Ex : Rue de Bercy" />
+          {% if form.libelle_long.errors %}
+            <p class="text-xs text-error mt-1">{{ form.libelle_long.errors|join:", " }}</p>
+          {% endif %}
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+            Libellé court
+          </label>
+          <input type="text" name="libelle_court"
+            value="{{ form.libelle_court.value|default:'' }}"
+            class="input input-bordered w-full text-sm {% if form.libelle_court.errors %}input-error{% endif %}"
+            placeholder="Ex : R DE BERCY" />
+          {% if form.libelle_court.errors %}
+            <p class="text-xs text-error mt-1">{{ form.libelle_court.errors|join:", " }}</p>
+          {% endif %}
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+            Code ville
+          </label>
+          <input type="text" name="code_voie_ville"
+            value="{{ form.code_voie_ville.value|default:'' }}"
+            class="input input-bordered w-full text-sm {% if form.code_voie_ville.errors %}input-error{% endif %}"
+            placeholder="Ex : 7512" />
+          {% if form.code_voie_ville.errors %}
+            <p class="text-xs text-error mt-1">{{ form.code_voie_ville.errors|join:", " }}</p>
+          {% endif %}
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+            Code Rivoli
+          </label>
+          <input type="text" name="code_voie_rivoli"
+            value="{{ form.code_voie_rivoli.value|default:'' }}"
+            class="input input-bordered w-full text-sm {% if form.code_voie_rivoli.errors %}input-error{% endif %}"
+            placeholder="Ex : 2345" />
+          {% if form.code_voie_rivoli.errors %}
+            <p class="text-xs text-error mt-1">{{ form.code_voie_rivoli.errors|join:", " }}</p>
+          {% endif %}
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+            Voie privée
+          </label>
+          <select name="voie_privee"
+            class="select select-bordered w-full text-sm {% if form.voie_privee.errors %}select-error{% endif %}">
+            <option value="0" {% if form.voie_privee.value == 0 or form.voie_privee.value == "0" %}selected{% endif %}>Non</option>
+            <option value="1" {% if form.voie_privee.value == 1 or form.voie_privee.value == "1" %}selected{% endif %}>Oui</option>
+          </select>
+          {% if form.voie_privee.errors %}
+            <p class="text-xs text-error mt-1">{{ form.voie_privee.errors|join:", " }}</p>
+          {% endif %}
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+            Date
+          </label>
+          <input type="date" name="date"
+            value="{{ form.date.value|date:'Y-m-d'|default:'' }}"
+            class="input input-bordered w-full text-sm {% if form.date.errors %}input-error{% endif %}" />
+          {% if form.date.errors %}
+            <p class="text-xs text-error mt-1">{{ form.date.errors|join:", " }}</p>
+          {% endif %}
+        </div>
+
+      </div>
+
+      <div class="px-6 py-4 border-t border-base-200 flex items-center justify-between gap-3">
+
+        <a href="{% url 'backoffice:gestion_voies' %}"
+          class="btn btn-ghost btn-sm gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Annuler
+        </a>
+
+        <button type="submit" class="btn btn-primary btn-sm gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          {% block submit_label %}Enregistrer{% endblock %}
+        </button>
+
+      </div>
+    </div>
+
+  </form>
+
+{% endblock %}

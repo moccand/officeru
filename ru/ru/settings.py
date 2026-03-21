@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # mes app
     'core.apps.CoreConfig',
     'backoffice.apps.BackofficeConfig',
 ]

@@ -1,0 +1,164 @@
+{% extends "backoffice/layouts/base.html" %}
+
+{% block page_title %}{{ titre }} — Administration{% endblock %}
+{% block page_heading %}{{ titre }}{% endblock %}
+{% block page_subheading %}
+  <p class="text-sm text-base-content/40 mt-0.5">{{ sous_titre }}</p>
+{% endblock %}
+
+{% block content %}
+
+  {% include "backoffice/partials/messages.html" %}
+
+  <form method="post" action="" class="space-y-5 fade-in delay-1 max-w-3xl">
+    {% csrf_token %}
+
+    {% if form.errors %}
+      <div class="alert alert-error alert-soft">
+        <svg xmlns="http://www.w3.org/2000/svg" class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        </svg>
+        <span>Veuillez corriger les erreurs ci-dessous.</span>
+      </div>
+    {% endif %}
+
+    <div class="card bg-base-100 border border-base-200 shadow-sm">
+      <div class="px-6 py-4 border-b border-base-200">
+        <p class="text-sm font-semibold text-base-content">Informations du compte</p>
+        {% if objet %}<p class="text-xs text-base-content/40 mt-0.5">ID : {{ objet.pk }}</p>{% endif %}
+      </div>
+      <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <div>
+          <label for="id_username" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+            Identifiant <span class="text-error">*</span>
+          </label>
+          <input type="text" name="username" id="id_username"
+            value="{{ form.username.value|default:'' }}"
+            class="input input-bordered w-full text-sm {% if form.username.errors %}input-error{% endif %}"
+            required />
+          {% if form.username.errors %}
+            <p class="text-xs text-error mt-1">{{ form.username.errors|join:", " }}</p>
+          {% endif %}
+        </div>
+
+        <div>
+          <label for="id_email" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+            Email
+          </label>
+          <input type="email" name="email" id="id_email"
+            value="{{ form.email.value|default:'' }}"
+            class="input input-bordered w-full text-sm {% if form.email.errors %}input-error{% endif %}" />
+          {% if form.email.errors %}
+            <p class="text-xs text-error mt-1">{{ form.email.errors|join:", " }}</p>
+          {% endif %}
+        </div>
+
+        <div>
+          <label for="id_first_name" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+            Prénom
+          </label>
+          <input type="text" name="first_name" id="id_first_name"
+            value="{{ form.first_name.value|default:'' }}"
+            class="input input-bordered w-full text-sm" />
+        </div>
+
+        <div>
+          <label for="id_last_name" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+            Nom
+          </label>
+          <input type="text" name="last_name" id="id_last_name"
+            value="{{ form.last_name.value|default:'' }}"
+            class="input input-bordered w-full text-sm" />
+        </div>
+
+        {% if not objet %}
+        <div>
+          <label for="id_password1" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+            Mot de passe <span class="text-error">*</span>
+          </label>
+          <input type="password" name="password1" id="id_password1"
+            class="input input-bordered w-full text-sm {% if form.password1.errors %}input-error{% endif %}"
+            required />
+          {% if form.password1.errors %}
+            <p class="text-xs text-error mt-1">{{ form.password1.errors|join:", " }}</p>
+          {% endif %}
+        </div>
+
+        <div>
+          <label for="id_password2" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+            Confirmer le mot de passe <span class="text-error">*</span>
+          </label>
+          <input type="password" name="password2" id="id_password2"
+            class="input input-bordered w-full text-sm {% if form.password2.errors %}input-error{% endif %}"
+            required />
+          {% if form.password2.errors %}
+            <p class="text-xs text-error mt-1">{{ form.password2.errors|join:", " }}</p>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="md:col-span-2 flex flex-wrap gap-6">
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" name="is_active" class="checkbox checkbox-primary checkbox-sm"
+              {% if form.is_active.value %}checked{% endif %} />
+            <div>
+              <p class="text-sm font-medium text-base-content">Compte actif</p>
+              <p class="text-xs text-base-content/40">L'utilisateur peut se connecter</p>
+            </div>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" name="is_staff" class="checkbox checkbox-primary checkbox-sm"
+              {% if form.is_staff.value %}checked{% endif %} />
+            <div>
+              <p class="text-sm font-medium text-base-content">Statut staff</p>
+              <p class="text-xs text-base-content/40">Accès à l'interface d'administration</p>
+            </div>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" name="is_superuser" class="checkbox checkbox-primary checkbox-sm"
+              {% if form.is_superuser.value %}checked{% endif %} />
+            <div>
+              <p class="text-sm font-medium text-base-content">Super utilisateur</p>
+              <p class="text-xs text-base-content/40">Toutes les permissions sans les déclarer</p>
+            </div>
+          </label>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+            Groupes
+          </label>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-2 p-3 border border-base-300 rounded-lg max-h-40 overflow-y-auto">
+            {% for group in tous_les_groupes %}
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="groups" value="{{ group.pk }}"
+                  class="checkbox checkbox-primary checkbox-xs"
+                  {% if group.pk in groupes_selectionnes %}checked{% endif %} />
+                <span class="text-xs text-base-content">{{ group.name }}</span>
+              </label>
+            {% empty %}
+              <p class="text-xs text-base-content/40 col-span-3">Aucun groupe disponible</p>
+            {% endfor %}
+          </div>
+        </div>
+
+      </div>
+      <div class="px-6 py-4 border-t border-base-200 flex items-center justify-between gap-3">
+        <a href="{% url 'backoffice:administration_utilisateurs' %}" class="btn btn-ghost btn-sm gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Annuler
+        </a>
+        <button type="submit" class="btn btn-primary btn-sm gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          {% block submit_label %}Enregistrer{% endblock %}
+        </button>
+      </div>
+    </div>
+  </form>
+
+{% endblock %}

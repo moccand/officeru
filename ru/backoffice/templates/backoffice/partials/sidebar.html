@@ -5,7 +5,7 @@
   <aside class="min-h-full w-64 bg-base-100 border-r border-base-200 flex flex-col">
 
         <div class="px-5 py-4 border-b border-base-200">
-      <a href="{% url 'backoffice:consultation_carte' %}" class="flex items-center gap-3">
+      <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0">
           <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-primary-content" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -15,7 +15,7 @@
           <p class="font-bold text-base text-base-content leading-tight">RU</p>
           <p class="text-[11px] text-base-content/40 leading-tight mt-0.5">Renseignement d'urbanisme</p>
         </div>
-      </a>
+      </div>
     </div>
 
         <nav class="flex-1 px-3 py-4 overflow-y-auto">
@@ -63,7 +63,7 @@
           </a>
         </li>
         <li>
-          <a href="{% url 'backoffice:gestion_troncons' %}"
+          <a href="{% url 'backoffice:gestion_alignements' %}"
             class="{% if active_page == 'gestion:troncons' %}active-nav{% endif %} rounded-lg hover:bg-base-200">
             <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
             Tronçons
