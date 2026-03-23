@@ -2,6 +2,7 @@
 {% load backoffice_tags %}
 
 {% block page_title %}Voies — Gestion{% endblock %}
+
 {% block page_heading_title %}Voies{% endblock %}
 {% block page_heading_subtitle %}Gestion du référentiel des voies{% endblock %}
 
@@ -187,26 +188,7 @@
 
 {% block extra_js %}
 <script>
-  // Fermeture manuelle d'un message
-function fermerMessage(btn) {
-  const alert = btn.closest('.alert');
-  alert.style.transition = 'opacity 0.3s ease';
-  alert.style.opacity = '0';
-  setTimeout(() => alert.remove(), 300);
-}
-
-// Disparition automatique après 5 secondes
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('#messages-container .alert').forEach(alert => {
-    setTimeout(() => {
-      if (alert.isConnected) {
-        alert.style.transition = 'opacity 0.3s ease';
-        alert.style.opacity = '0';
-        setTimeout(() => alert.remove(), 300);
-      }
-    }, 5000);
-  });
-});
+{# fermerMessage + auto-dismiss 5 min : définis dans base.html #}
 function confirmerSuppression(pk, libelle) {
   document.getElementById('modal-voie-libelle').textContent = libelle;
   document.getElementById('form-suppression').action = `/gestion/voies/${pk}/supprimer/`;

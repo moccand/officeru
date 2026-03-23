@@ -77,6 +77,11 @@
     tr.data-row:hover td { background: color-mix(in oklch, var(--color-primary) 5%, transparent); }
     tr.data-row { transition: background 0.12s; }
 
+    /* Transition légère quand l’état erreur est retiré (complément au JS) */
+    .input.input-bordered, .select.select-bordered, .textarea.textarea-bordered {
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
     #theme-dropdown-panel {
       display: none;
       position: absolute;
@@ -123,6 +128,89 @@
   </div>
 
 {% include "backoffice/partials/theme_js.html" %}
+
+{# Messages flash : fermeture manuelle + disparition auto (erreurs 5 s, succès 5 min) #}
+{# Blocs récapitulatif d’erreurs formulaire : disparition auto 5 s #}
+<script>
+(function () {
+  var ERROR_DISMISS_MS = 5000;
+  var SUCCESS_DISMISS_MS = 5 * 60 * 1000;
+
+  function fadeRemoveAlert(el) {
+    if (!el || !el.isConnected) return;
+    el.style.transition = 'opacity 0.3s ease';
+    el.style.opacity = '0';
+    setTimeout(function () { if (el.parentNode) el.remove(); }, 300);
+  }
+
+  window.fermerMessage = function (btn) {
+    var alert = btn && btn.closest ? btn.closest('.alert') : null;
+    if (!alert) return;
+    fadeRemoveAlert(alert);
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('#messages-container .alert').forEach(function (alert) {
+      var ms = alert.classList.contains('alert-error') ? ERROR_DISMISS_MS : SUCCESS_DISMISS_MS;
+      setTimeout(function () { fadeRemoveAlert(alert); }, ms);
+    });
+    document.querySelectorAll('.ru-form-summary-error').forEach(function (summary) {
+      setTimeout(function () { fadeRemoveAlert(summary); }, ERROR_DISMISS_MS);
+    });
+  });
+})();
+</script>
+
+{# Erreurs de formulaire : retirer le rouge au moment où l’utilisateur corrige le champ (JS). #}
+<script>
+(function () {
+  function clearFieldVisualErrors(control) {
+    if (!control || !control.closest) return;
+    control.classList.remove('input-error', 'textarea-error', 'select-error');
+    var field = control.closest('.ru-form-field');
+    if (field) {
+      field.querySelectorAll('.ru-inline-error').forEach(function (el) { el.remove(); });
+      field.querySelectorAll('.border-error').forEach(function (el) { el.classList.remove('border-error'); });
+    } else {
+      var p = control.parentElement;
+      if (p) {
+        p.querySelectorAll('p.ru-inline-error').forEach(function (el) { el.remove(); });
+        p.classList.remove('border-error');
+      }
+    }
+    var form = control.closest('form');
+    if (form) {
+      var summary = form.querySelector('.ru-form-summary-error');
+      if (summary) {
+        var nf = summary.querySelector('.ru-non-field-errors');
+        var hasNf = nf && nf.querySelector('li');
+        var hasFieldErr = form.querySelector('.input-error, .textarea-error, .select-error, .border-error, .ru-inline-error');
+        if (!hasNf && !hasFieldErr) {
+          summary.style.transition = 'opacity 0.25s ease';
+          summary.style.opacity = '0';
+          setTimeout(function () { if (summary.parentNode) summary.remove(); }, 250);
+        }
+      }
+    }
+  }
+
+  document.addEventListener('input', function (e) {
+    var t = e.target;
+    if (!t.matches) return;
+    if (t.matches('input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=submit]):not([type=button]):not([type=file]), textarea, select')) {
+      clearFieldVisualErrors(t);
+    }
+  }, true);
+
+  document.addEventListener('change', function (e) {
+    var t = e.target;
+    if (!t.matches) return;
+    if (t.matches('input[type=checkbox], input[type=radio], select')) {
+      clearFieldVisualErrors(t);
+    }
+  }, true);
+})();
+</script>
 
 {% block extra_js %}{% endblock %}
 

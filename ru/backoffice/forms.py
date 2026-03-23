@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Max
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.auth.forms import UserCreationForm
@@ -13,6 +14,11 @@ COMMUNES_PARIS = [(i, f'750{str(i-75100).zfill(2)}')
 
 
 class RuVoieForm(forms.ModelForm):
+    """
+    id_voie est une clé primaire IntegerField sans auto-incrément (comme id_alignement).
+    """
+    use_required_attribute = False
+
     class Meta:
         model  = RuVoie
         fields = [
@@ -24,7 +30,20 @@ class RuVoieForm(forms.ModelForm):
             'date',
         ]
 
+    def save(self, commit=True):
+        voie = super().save(commit=False)
+        if voie.pk is None:
+            max_id = RuVoie.objects.aggregate(m=Max('id_voie'))['m']
+            voie.id_voie = (max_id or 0) + 1
+        if commit:
+            voie.save()
+        return voie
+
+
 class UtilisateurCreationForm(UserCreationForm):
+    """Validation côté serveur uniquement (pas d'attribut HTML required / pas de validation navigateur)."""
+    use_required_attribute = False
+
     class Meta(UserCreationForm.Meta):
         model  = User
         fields = ['username', 'email', 'first_name', 'last_name',
@@ -32,6 +51,8 @@ class UtilisateurCreationForm(UserCreationForm):
 
 
 class UtilisateurEditionForm(forms.ModelForm):
+    use_required_attribute = False
+
     class Meta:
         model  = User
         fields = ['username', 'email', 'first_name', 'last_name',
@@ -44,6 +65,8 @@ class GroupeForm(forms.ModelForm):
     On retire les permissions (gérées via GroupRequiredMixin)
     et on ajoute la description via GroupProfile.
     """
+    use_required_attribute = False
+
     description = forms.CharField(
         required=False,
         widget=forms.Textarea(attrs={'rows': 3}),
@@ -77,6 +100,12 @@ class GroupeForm(forms.ModelForm):
 
 
 class AlignementForm(forms.ModelForm):
+    """
+    Champs réellement obligatoires côté métier / affichage (*) : voie, parcelle,
+    numéro début et numéro fin. Adresses et suffixes sont optionnels (le modèle
+    recalcule souvent les adresses à l'enregistrement).
+    """
+    use_required_attribute = False
 
     commune = forms.ChoiceField(
         choices=[('', '— Sélectionner —')] + [(str(c[0]), c[1]) for c in COMMUNES_PARIS],
@@ -92,14 +121,43 @@ class AlignementForm(forms.ModelForm):
         required=False,
     )
 
-
     class Meta:
         model  = RuAlignement
         fields = [
             'id_voie', 'id_parcelle',
             'numero_debut', 'adresse_debut',
             'suffixe_un_debut', 'suffixe_2_debut', 'suffixe_3_debut',
-            #'numero_fin', 'adresse_fin',
+            'numero_fin', 'adresse_fin',
             'suffixe_un_fin', 'suffixe_2_fin', 'suffixe_3_fin',
             'parite', 'commune', 'date',
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Création : le modèle a default=0 sur les numéros → sans ça le formulaire affiche « 0 ».
+        if self.instance.pk is None and not self.is_bound:
+            self.initial['numero_debut'] = None
+            self.initial['numero_fin'] = None
+        # Le modèle n'a pas blank=True sur ces CharField → Django les marque « required »
+        # alors qu'ils ne doivent pas porter l'astérisque ni bloquer la validation à vide.
+        optional_char = (
+            'adresse_debut', 'adresse_fin',
+            'suffixe_un_debut', 'suffixe_2_debut', 'suffixe_3_debut',
+            'suffixe_un_fin', 'suffixe_2_fin', 'suffixe_3_fin',
+        )
+        for name in optional_char:
+            if name in self.fields:
+                self.fields[name].required = False
+
+    def save(self, commit=True):
+        """
+        id_alignement est une clé primaire IntegerField sans auto-incrément Django :
+        il faut attribuer le prochain identifiant à la création.
+        """
+        alignement = super().save(commit=False)
+        if alignement.pk is None:
+            max_id = RuAlignement.objects.aggregate(m=Max('id_alignement'))['m']
+            alignement.id_alignement = (max_id or 0) + 1
+        if commit:
+            alignement.save()
+        return alignement

@@ -2,21 +2,19 @@
 
 {% block page_title %}Édition — {{ voie.libelle_long|default:voie.pk }}{% endblock %}
 
-{% block page_heading %}Édition d'une voie{% endblock %}
-
-{% block page_subheading %}
-  <p class="text-sm text-base-content/40 mt-0.5">
-    Modification de la voie <span class="font-medium text-base-content">{{ voie.libelle_long|default:voie.pk }}</span>
-  </p>
-{% endblock %}
-
-
 {% block page_header %}
   <div class="fade-in delay-1 mb-6 flex items-center justify-between gap-4">
     <div>
       <h1 class="text-2xl font-bold text-base-content">
-        Voie : <span class="font-mono text-primary">{{ voie }}</span>
+        {% block voie_header_title %}
+          Voie : <span class="font-mono text-primary">{{ voie }}</span>
+        {% endblock %}
       </h1>
+      <p class="text-sm text-base-content/40 mt-0.5">
+        {% block voie_header_subtitle %}
+          Modification de la voie <span class="font-medium text-base-content">{{ voie.libelle_long|default:voie.pk }}</span>
+        {% endblock %}
+      </p>
     </div>
     <a href="{% url 'backoffice:gestion_voies' %}" class="btn btn-ghost btn-sm gap-2 shrink-0">
       <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -31,11 +29,11 @@
 
 {% block content %}
 
-  <form method="post" action="" class="space-y-5 fade-in delay-1 max-w-3xl">
+  <form method="post" action="" novalidate class="space-y-5 fade-in delay-1 max-w-3xl">
     {% csrf_token %}
 
     {% if form.errors %}
-      <div class="alert alert-error alert-soft">
+      <div class="alert alert-error alert-soft mb-5 ru-form-summary-error">
         <svg xmlns="http://www.w3.org/2000/svg" class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
         </svg>
@@ -52,61 +50,61 @@
 
       <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        <div class="md:col-span-2">
+        <div class="md:col-span-2 ru-form-field">
           <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
-            Libellé long
+            {% include "backoffice/partials/ru_label_required.html" with label_text="Libellé long" required=form.libelle_long.field.required only %}
           </label>
           <input type="text" name="libelle_long"
             value="{{ form.libelle_long.value|default:'' }}"
             class="input input-bordered w-full text-sm {% if form.libelle_long.errors %}input-error{% endif %}"
             placeholder="Ex : Rue de Bercy" />
           {% if form.libelle_long.errors %}
-            <p class="text-xs text-error mt-1">{{ form.libelle_long.errors|join:", " }}</p>
+            <p class="text-xs text-error mt-1 ru-inline-error">{{ form.libelle_long.errors|join:", " }}</p>
           {% endif %}
         </div>
 
-        <div class="md:col-span-2">
+        <div class="md:col-span-2 ru-form-field">
           <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
-            Libellé court
+            {% include "backoffice/partials/ru_label_required.html" with label_text="Libellé court" required=form.libelle_court.field.required only %}
           </label>
           <input type="text" name="libelle_court"
             value="{{ form.libelle_court.value|default:'' }}"
             class="input input-bordered w-full text-sm {% if form.libelle_court.errors %}input-error{% endif %}"
             placeholder="Ex : R DE BERCY" />
           {% if form.libelle_court.errors %}
-            <p class="text-xs text-error mt-1">{{ form.libelle_court.errors|join:", " }}</p>
+            <p class="text-xs text-error mt-1 ru-inline-error">{{ form.libelle_court.errors|join:", " }}</p>
           {% endif %}
         </div>
 
-        <div>
+        <div class="ru-form-field">
           <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
-            Code ville
+            {% include "backoffice/partials/ru_label_required.html" with label_text="Code ville" required=form.code_voie_ville.field.required only %}
           </label>
           <input type="text" name="code_voie_ville"
             value="{{ form.code_voie_ville.value|default:'' }}"
             class="input input-bordered w-full text-sm {% if form.code_voie_ville.errors %}input-error{% endif %}"
             placeholder="Ex : 7512" />
           {% if form.code_voie_ville.errors %}
-            <p class="text-xs text-error mt-1">{{ form.code_voie_ville.errors|join:", " }}</p>
+            <p class="text-xs text-error mt-1 ru-inline-error">{{ form.code_voie_ville.errors|join:", " }}</p>
           {% endif %}
         </div>
 
-        <div>
+        <div class="ru-form-field">
           <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
-            Code Rivoli
+            {% include "backoffice/partials/ru_label_required.html" with label_text="Code Rivoli" required=form.code_voie_rivoli.field.required only %}
           </label>
           <input type="text" name="code_voie_rivoli"
             value="{{ form.code_voie_rivoli.value|default:'' }}"
             class="input input-bordered w-full text-sm {% if form.code_voie_rivoli.errors %}input-error{% endif %}"
             placeholder="Ex : 2345" />
           {% if form.code_voie_rivoli.errors %}
-            <p class="text-xs text-error mt-1">{{ form.code_voie_rivoli.errors|join:", " }}</p>
+            <p class="text-xs text-error mt-1 ru-inline-error">{{ form.code_voie_rivoli.errors|join:", " }}</p>
           {% endif %}
         </div>
 
-        <div>
+        <div class="ru-form-field">
           <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
-            Voie privée
+            {% include "backoffice/partials/ru_label_required.html" with label_text="Voie privée" required=form.voie_privee.field.required only %}
           </label>
           <select name="voie_privee"
             class="select select-bordered w-full text-sm {% if form.voie_privee.errors %}select-error{% endif %}">
@@ -114,19 +112,19 @@
             <option value="1" {% if form.voie_privee.value == 1 or form.voie_privee.value == "1" %}selected{% endif %}>Oui</option>
           </select>
           {% if form.voie_privee.errors %}
-            <p class="text-xs text-error mt-1">{{ form.voie_privee.errors|join:", " }}</p>
+            <p class="text-xs text-error mt-1 ru-inline-error">{{ form.voie_privee.errors|join:", " }}</p>
           {% endif %}
         </div>
 
-        <div>
+        <div class="ru-form-field">
           <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
-            Date
+            {% include "backoffice/partials/ru_label_required.html" with label_text="Date" required=form.date.field.required only %}
           </label>
           <input type="date" name="date"
             value="{{ form.date.value|date:'Y-m-d'|default:'' }}"
             class="input input-bordered w-full text-sm {% if form.date.errors %}input-error{% endif %}" />
           {% if form.date.errors %}
-            <p class="text-xs text-error mt-1">{{ form.date.errors|join:", " }}</p>
+            <p class="text-xs text-error mt-1 ru-inline-error">{{ form.date.errors|join:", " }}</p>
           {% endif %}
         </div>
 

@@ -1,20 +1,29 @@
 {% extends "backoffice/layouts/base.html" %}
 
 {% block page_title %}Nouvel alignement — Gestion{% endblock %}
-{% block page_heading %}Nouvel alignement{% endblock %}
-{% block page_subheading %}
-  <p class="text-sm text-base-content/40 mt-0.5">Création d'un nouvel alignement cadastral</p>
+
+{% block page_header %}
+  <div class="fade-in delay-1 mb-6 flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-base-content">Nouvel alignement</h1>
+      <p class="text-sm text-base-content/40 mt-0.5">Création d'un nouvel alignement cadastral</p>
+    </div>
+    <a href="{% url 'backoffice:gestion_alignements' %}" class="btn btn-ghost btn-sm gap-2 shrink-0">
+      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+      Retour à la liste
+    </a>
+  </div>
 {% endblock %}
 
 {% block content %}
 
-  {% include "backoffice/partials/messages.html" %}
-
-  <form method="post" action="{% url 'backoffice:alignement_ajouter' %}" class="fade-in delay-1 max-w-4xl">
+  <form method="post" action="{% url 'backoffice:alignement_ajouter' %}" novalidate class="fade-in delay-1 max-w-4xl">
     {% csrf_token %}
 
     {% if form.errors %}
-      <div class="alert alert-error alert-soft mb-5">
+      <div class="alert alert-error alert-soft mb-5 ru-form-summary-error">
         <svg xmlns="http://www.w3.org/2000/svg" class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
         </svg>
@@ -32,17 +41,18 @@
       <div class="p-6 space-y-6">
 
         <!-- ── Voie ── -->
-        <div>
+        <div class="ru-form-field">
           <label for="id_voie_search" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
-            Voie <span class="text-error">*</span>
+            {% include "backoffice/partials/ru_label_required.html" with label_text="Voie" required=form.id_voie.field.required only %}
           </label>
           <div class="relative" id="voie-autocomplete-container">
-            <div class="flex items-center gap-2 px-3 py-2 border border-base-300 rounded-lg bg-base-100 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+            <div class="flex items-center gap-2 px-3 py-2 border border-base-300 rounded-lg bg-base-100 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all {% if form.id_voie.errors %}border-error{% endif %}">
               <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
               </svg>
               <input type="text" id="id_voie_search"
-                class="grow bg-transparent outline-none text-sm text-base-content placeholder:text-base-content/30"
+                class="grow bg-transparent text-sm text-base-content placeholder:text-base-content/30 min-w-0"
+                style="outline:none;box-shadow:none;border:none;"
                 placeholder="Rechercher une voie par libellé ou code…"
                 autocomplete="off" aria-autocomplete="list" aria-controls="voie-suggestions" />
               <div id="voie-spinner" class="hidden loading loading-spinner loading-xs text-primary shrink-0"></div>
@@ -57,7 +67,7 @@
             <input type="hidden" name="id_voie" id="id_voie_hidden" value="" />
             <div id="voie-suggestions" class="absolute left-0 right-0 top-full mt-1 bg-base-100 border border-base-200 rounded-xl shadow-xl overflow-hidden z-30 hidden" role="listbox"></div>
           </div>
-          {% if form.id_voie.errors %}<p class="text-xs text-error mt-1">{{ form.id_voie.errors|join:", " }}</p>{% endif %}
+          {% if form.id_voie.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.id_voie.errors|join:", " }}</p>{% endif %}
           <div id="voie-selected-info" class="hidden mt-2 px-3 py-2 bg-primary/5 border border-primary/20 rounded-lg">
             <p class="text-xs text-primary font-medium" id="voie-selected-label"></p>
             <p class="text-[11px] text-base-content/40" id="voie-selected-codes"></p>
@@ -65,17 +75,18 @@
         </div>
 
         <!-- ── Parcelle ── -->
-        <div>
+        <div class="ru-form-field">
           <label for="id_parcelle_search" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
-            Parcelle <span class="text-error">*</span>
+            {% include "backoffice/partials/ru_label_required.html" with label_text="Parcelle" required=form.id_parcelle.field.required only %}
           </label>
           <div class="relative" id="parcelle-autocomplete-container">
-            <div class="flex items-center gap-2 px-3 py-2 border border-base-300 rounded-lg bg-base-100 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 transition-all">
+            <div class="flex items-center gap-2 px-3 py-2 border border-base-300 rounded-lg bg-base-100 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 transition-all {% if form.id_parcelle.errors %}border-error{% endif %}">
               <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
               </svg>
               <input type="text" id="id_parcelle_search"
-                class="grow bg-transparent outline-none text-sm text-base-content placeholder:text-base-content/30"
+                class="grow bg-transparent text-sm text-base-content placeholder:text-base-content/30 min-w-0"
+                style="outline:none;box-shadow:none;border:none;"
                 placeholder="Rechercher une parcelle…"
                 autocomplete="off" aria-autocomplete="list" aria-controls="parcelle-suggestions" />
               <div id="parcelle-spinner" class="hidden loading loading-spinner loading-xs text-accent shrink-0"></div>
@@ -90,43 +101,51 @@
             <input type="hidden" name="id_parcelle" id="id_parcelle_hidden" value="" />
             <div id="parcelle-suggestions" class="absolute left-0 right-0 top-full mt-1 bg-base-100 border border-base-200 rounded-xl shadow-xl overflow-hidden z-30 hidden" role="listbox"></div>
           </div>
-          {% if form.id_parcelle.errors %}<p class="text-xs text-error mt-1">{{ form.id_parcelle.errors|join:", " }}</p>{% endif %}
+          {% if form.id_parcelle.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.id_parcelle.errors|join:", " }}</p>{% endif %}
           <div id="parcelle-selected-info" class="hidden mt-2 px-3 py-2 bg-accent/5 border border-accent/20 rounded-lg">
             <p class="text-xs text-accent font-medium" id="parcelle-selected-label"></p>
             <p class="text-[11px] text-base-content/40" id="parcelle-selected-codes"></p>
           </div>
         </div>
 
+        {# Saisie désactivée : recalculées à l'enregistrement (voir RuAlignement.save) #}
+        <input type="hidden" name="adresse_debut" value="" />
+        <input type="hidden" name="adresse_fin" value="" />
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
 
           <!-- Ligne 1 : Numéro début / Numéro fin -->
-          <div>
-            <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">Numéro début</label>
-            <input type="number" name="numero_debut" value="{{ form.numero_debut.value|default:'0' }}"
+          <div class="ru-form-field">
+            <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+              {% include "backoffice/partials/ru_label_required.html" with label_text="Numéro début" required=form.numero_debut.field.required only %}
+            </label>
+            <input type="number" name="numero_debut" value="{{ form.numero_debut.value|default_if_none:'' }}"
               class="input input-bordered w-full text-sm {% if form.numero_debut.errors %}input-error{% endif %}" />
-            {% if form.numero_debut.errors %}<p class="text-xs text-error mt-1">{{ form.numero_debut.errors|join:", " }}</p>{% endif %}
+            {% if form.numero_debut.errors %}
+              <p class="text-xs text-error mt-1 ru-inline-error">{{ form.numero_debut.errors|join:", " }}</p>
+            {% else %}
+              <p class="text-xs text-base-content/40 mt-1">
+                Adresse calculée : <span class="font-medium">{{ form.adresse_debut.value|default:"—" }}</span>
+              </p>
+            {% endif %}
           </div>
-          <div>
-            <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">Numéro fin</label>
-            <input type="number" name="numero_fin" value="{{ form.numero_fin.value|default:'0' }}"
+          <div class="ru-form-field">
+            <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+              {% include "backoffice/partials/ru_label_required.html" with label_text="Numéro fin" required=form.numero_fin.field.required only %}
+            </label>
+            <input type="number" name="numero_fin" value="{{ form.numero_fin.value|default_if_none:'' }}"
               class="input input-bordered w-full text-sm {% if form.numero_fin.errors %}input-error{% endif %}" />
-            {% if form.numero_fin.errors %}<p class="text-xs text-error mt-1">{{ form.numero_fin.errors|join:", " }}</p>{% endif %}
+            {% if form.numero_fin.errors %}
+              <p class="text-xs text-error mt-1 ru-inline-error">{{ form.numero_fin.errors|join:", " }}</p>
+            {% else %}
+              <p class="text-xs text-base-content/40 mt-1">
+                Adresse calculée : <span class="font-medium">{{ form.adresse_fin.value|default:"—" }}</span>
+              </p>
+            {% endif %}
           </div>
 
-          <!-- Ligne 2 : Adresse début / Adresse fin -->
-          <div>
-            <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">Adresse début</label>
-            <input type="text" name="adresse_debut" value="{{ form.adresse_debut.value|default:'' }}"
-              class="input input-bordered w-full text-sm" />
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">Adresse fin</label>
-            <input type="text" name="adresse_fin" value="{{ form.adresse_fin.value|default:'' }}"
-              class="input input-bordered w-full text-sm" />
-          </div>
-
-          <!-- Ligne 3 : Suffixes début / Suffixes fin -->
-          <div>
+          <!-- Ligne 2 : Suffixes début / Suffixes fin -->
+          <div class="ru-form-field">
             <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">Suffixes début</label>
             <div class="flex gap-2">
               <input type="text" name="suffixe_un_debut" placeholder="Sfx 1" value="{{ form.suffixe_un_debut.value|default:'' }}" class="input input-bordered flex-1 text-sm" />
@@ -134,7 +153,7 @@
               <input type="text" name="suffixe_3_debut" placeholder="Sfx 3" value="{{ form.suffixe_3_debut.value|default:'' }}" class="input input-bordered flex-1 text-sm" />
             </div>
           </div>
-          <div>
+          <div class="ru-form-field">
             <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">Suffixes fin</label>
             <div class="flex gap-2">
               <input type="text" name="suffixe_un_fin" placeholder="Sfx 1" value="{{ form.suffixe_un_fin.value|default:'' }}" class="input input-bordered flex-1 text-sm" />
@@ -147,28 +166,37 @@
           <div class="md:col-span-2"><hr class="border-base-200" /></div>
 
           <!-- Ligne 4 : Parité / Commune -->
-          <div>
-            <label for="id_parite" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">Parité</label>
-            <select name="parite" id="id_parite" class="select select-bordered w-full text-sm">
+          <div class="ru-form-field">
+            <label for="id_parite" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+              {% include "backoffice/partials/ru_label_required.html" with label_text="Parité" required=form.parite.field.required only %}
+            </label>
+            <select name="parite" id="id_parite" class="select select-bordered w-full text-sm {% if form.parite.errors %}select-error{% endif %}">
               {% for code, label in form.parite.field.choices %}
                 <option value="{{ code }}" {% if form.parite.value|stringformat:"s" == code|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
               {% endfor %}
             </select>
+            {% if form.parite.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.parite.errors|join:", " }}</p>{% endif %}
           </div>
-          <div>
-            <label for="id_commune" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">Commune</label>
-            <select name="commune" id="id_commune" class="select select-bordered w-full text-sm">
+          <div class="ru-form-field">
+            <label for="id_commune" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+              {% include "backoffice/partials/ru_label_required.html" with label_text="Commune" required=form.commune.field.required only %}
+            </label>
+            <select name="commune" id="id_commune" class="select select-bordered w-full text-sm {% if form.commune.errors %}select-error{% endif %}">
               {% for code, label in form.commune.field.choices %}
                 <option value="{{ code }}" {% if form.commune.value|stringformat:"s" == code|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
               {% endfor %}
             </select>
+            {% if form.commune.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.commune.errors|join:", " }}</p>{% endif %}
           </div>
 
           <!-- Ligne 5 : Date -->
-          <div>
-            <label for="id_date" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">Date</label>
+          <div class="ru-form-field">
+            <label for="id_date" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+              {% include "backoffice/partials/ru_label_required.html" with label_text="Date" required=form.date.field.required only %}
+            </label>
             <input type="date" name="date" id="id_date" value="{{ form.date.value|date:'Y-m-d'|default:'' }}"
-              class="input input-bordered w-full text-sm" />
+              class="input input-bordered w-full text-sm {% if form.date.errors %}input-error{% endif %}" />
+            {% if form.date.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.date.errors|join:", " }}</p>{% endif %}
           </div>
 
         </div>

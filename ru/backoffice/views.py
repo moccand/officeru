@@ -112,7 +112,7 @@ class HomeView(TemplateView):
     """Redirige vers la page par défaut selon le statut d'authentification."""
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            return redirect('backoffice:gestion_parcelles')
+            return redirect('backoffice:consultation_carte')
         return redirect('backoffice:consultation_carte')
 
 
@@ -292,15 +292,10 @@ class AlignementAjouterView(View):
         form = AlignementForm(request.POST)
         if form.is_valid():
             alignement = form.save()
-            messages.success(
-                request,
-                f'Alignement {alignement.id_alignement} créé avec succès.'
-            )
-            # Redirection vers la page d'édition, onglet Règles actif
-            return redirect(
-                f"{reverse('backoffice:alignement_edit', args=[alignement.pk])}?onglet=regles"
-            )
-        messages.error(request, 'Veuillez corriger les erreurs.')
+            # Pas de messages.success : alignement_edit n'affiche plus les messages Django.
+            # Redirection vers la page d'édition, onglet Alignement (défaut)
+            return redirect('backoffice:alignement_edit', pk=alignement.pk)
+        # Pas de messages.error : alignement_ajouter.html affiche déjà l'alerte form.errors
         voie_initiale = None
         voie_pk = request.POST.get('id_voie', '')
         if voie_pk:
@@ -309,11 +304,40 @@ class AlignementAjouterView(View):
                       self._ctx(request, form, voie_initiale))
 
 
+def _alignement_parcelle_autocomplete_prefill(alignement):
+    """
+    Libellé / sous-ligne pour le bloc parcelle (même logique visuelle que l'autocomplete).
+    """
+    pid = getattr(alignement, 'id_parcelle_id', None) or None
+    if not pid:
+        return {
+            'parcelle_ac_visible': False,
+            'parcelle_ac_label':   '',
+            'parcelle_ac_codes':   '',
+        }
+    row = RuParcelle.objects.filter(pk=pid).values('id_parcelle', 'identifiant').first()
+    if row:
+        ident_val = row.get('identifiant')
+        # Même logique que ParcellesAutocompleteView : label = str(identifiant), codes = identifiant
+        label = str(ident_val) if ident_val is not None else str(row['id_parcelle'])
+        if not (label or '').strip():
+            label = str(row['id_parcelle'])
+        codes = str(ident_val) if ident_val is not None else ''
+    else:
+        label = str(pid)
+        codes = ''
+    return {
+        'parcelle_ac_visible': True,
+        'parcelle_ac_label':   label,
+        'parcelle_ac_codes':   codes,
+    }
+
+
 class AlignementEditView(View):
     template_name = 'backoffice/gestion/alignement_edit.html'
 
     def _ctx(self, request, alignement, form, onglet):
-        return {
+        ctx = {
             'active_page': 'gestion:alignements',
             'breadcrumbs': [
                 {'label': 'Gestion'},
@@ -325,6 +349,8 @@ class AlignementEditView(View):
             'form': form,
             'onglet_actif': onglet,
         }
+        ctx.update(_alignement_parcelle_autocomplete_prefill(alignement))
+        return ctx
 
     def _get_onglet(self, request):
         onglet = request.GET.get('onglet', 'alignement')
@@ -334,7 +360,7 @@ class AlignementEditView(View):
         # pour rester sur un modele de donnée normalisé mais bénéficier des attributs de la voie de l'alignement
         # il est mieux de passer à get_object_or_404 un queryset pour avoir une seule jointure et pas plein de SQL à l'usage dans la page
         alignement = get_object_or_404(
-            RuAlignement.objects.select_related('id_voie'),
+            RuAlignement.objects.select_related('id_voie', 'id_parcelle'),
             pk=pk
         )
         onglet     = self._get_onglet(request)
@@ -343,19 +369,18 @@ class AlignementEditView(View):
                       self._ctx(request, alignement, form, onglet))
 
     def post(self, request, pk):
-        alignement = get_object_or_404(RuAlignement, pk=pk)
+        alignement = get_object_or_404(
+            RuAlignement.objects.select_related('id_voie', 'id_parcelle'),
+            pk=pk
+        )
         onglet     = self._get_onglet(request)
         form       = AlignementForm(request.POST, instance=alignement)
         if form.is_valid():
             form.save()
-            messages.success(
-                request,
-                f'Alignement {alignement.id_alignement} modifié avec succès.'
-            )
+            # Pas de messages.success : la page n'affiche que les erreurs formulaire sous les onglets.
             return redirect(
                 f"{reverse('backoffice:alignement_edit', args=[pk])}?onglet={onglet}"
             )
-        messages.error(request, 'Veuillez corriger les erreurs.')
         return render(request, self.template_name,
                       self._ctx(request, alignement, form, onglet))
 
@@ -485,10 +510,8 @@ class GestionVoieEditView(View):
                 f'La voie "{voie}" a été modifiée avec succès.'
             )
             return redirect('backoffice:gestion_voies')
-        messages.error(
-            request,
-            'La modification a échoué. Veuillez corriger les erreurs ci-dessous.'
-        )
+        # Pas de messages.error ici : voie_edit.html affiche déjà form.errors ;
+        # un message Django resterait en session et réapparaîtrait sur la liste.
         return render(request, self.template_name, self.get_context(request, voie, form))
 
 class GestionVoieAjouterView(View):
@@ -520,10 +543,7 @@ class GestionVoieAjouterView(View):
                 f'La voie "{voie}" a été créée avec succès.'
             )
             return redirect('backoffice:gestion_voies')
-        messages.error(
-            request,
-            'La création a échoué. Veuillez corriger les erreurs ci-dessous.'
-        )
+        # Idem édition : éviter un message de session non affiché sur cette page.
         return render(request, self.template_name, self.get_context(request, form))
 
 class GestionVoieDupliquerView( RuContextMixin, TemplateView):
@@ -741,7 +761,6 @@ class UtilisateurAjouterView( View):
             form.save()
             messages.success(request, 'Utilisateur créé avec succès.')
             return redirect('backoffice:administration_utilisateurs')
-        messages.error(request, 'Veuillez corriger les erreurs.')
         return render(request, self.template_name, self._ctx(request, form))
 
 
@@ -771,7 +790,6 @@ class UtilisateurEditView(View):
             form.save()
             messages.success(request, f'Utilisateur "{user}" modifié avec succès.')
             return redirect('backoffice:administration_utilisateurs')
-        messages.error(request, 'Veuillez corriger les erreurs.')
         return render(request, self.template_name, self._ctx(request, user, form))
 
 
@@ -799,6 +817,7 @@ class GroupeAjouterView(View):
             'objet':                    None,
             'titre':                    'Nouveau groupe',
             'sous_titre':               'Création d\'un nouveau groupe',
+            'groupe_systeme':           False,
         }
 
     def get(self, request):
@@ -810,7 +829,6 @@ class GroupeAjouterView(View):
             form.save()
             messages.success(request, 'Groupe créé avec succès.')
             return redirect('backoffice:administration_groupes')
-        messages.error(request, 'Veuillez corriger les erreurs.')
         return render(request, self.template_name, self._ctx(request, form))
 
 
@@ -845,7 +863,6 @@ class GroupeEditView(View):
             form.save()
             messages.success(request, f'Groupe "{groupe.name}" modifié avec succès.')
             return redirect('backoffice:administration_groupes')
-        messages.error(request, 'Veuillez corriger les erreurs.')
         return render(request, self.template_name, self._ctx(request, groupe, form))
 
 

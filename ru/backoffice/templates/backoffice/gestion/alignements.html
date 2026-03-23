@@ -99,6 +99,7 @@
             {% include "backoffice/partials/sortable_th.html" with col="numero_fin"    label="N° fin" %}
             {% include "backoffice/partials/sortable_th.html" with col="parite"        label="Parité" %}
             {% include "backoffice/partials/sortable_th.html" with col="commune"       label="Commune" %}
+            {% include "backoffice/partials/sortable_th.html" with col="parcelle"       label="Parcelle" %}
             {% include "backoffice/partials/sortable_th.html" with col="date"          label="Date" %}
             <th class="font-semibold w-20 text-center">Actions</th>
           </tr>
@@ -126,7 +127,9 @@
                   <span class="badge badge-ghost badge-sm">Impair</span>
                 {% endif %}
               </td>
-              <td class="text-base-content/60 text-xs">{{ a.commune|default:"—" }}</td>
+              <td class="text-base-content/60 text-xs">{{ a.commune|default:"" }}</td>
+              <td class="text-base-content/60 text-xs">{{ a.id_parcelle.identifiant|default:"" }}</td>
+
               <td class="text-base-content/60 text-xs whitespace-nowrap">
                 {{ a.date|date:"d/m/Y"|default:"—" }}
               </td>
