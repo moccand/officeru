@@ -46,6 +46,8 @@
   </nav>
 {% endblock %}
 
+{# ici on replace tout le contenu pour n'avoir que la carte dans la zone de contenu #}
+{# et donc il n'y a par exemple plus les éléments de page_heading_title et page_heading_subtitle #}
 {% block main_slot %}
   <div class="flex-1 relative min-h-0">
     <div id="map" class="absolute inset-0"></div>

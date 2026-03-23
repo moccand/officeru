@@ -4,7 +4,7 @@ utilise :
 - Python 3.12.7  
 - Django 6.0.3  
 - Tailwind 4  
-- DaisyUi 5  
+- DaisyUi 5  (pour l'IA et les IDE : https://daisyui.com/docs/editor/)
 - https://heroicons.com/  
 
 ## Installation  
@@ -12,6 +12,7 @@ utilise :
 python -m venv .venv  
 source .venv/bin/activate      # Linux/Mac  
 ou .venv\Scripts\activate    # Windows  
+pour powershell (par exemple dans Cursor) il peut être nécessaire de lancer : Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned  
 pip install -r requirements.txt  
 python manage.py runserver  
 

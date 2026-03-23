@@ -6,9 +6,8 @@
   <div class="fade-in delay-1 mb-6 flex items-center justify-between gap-4">
     <div>
       <h1 class="text-2xl font-bold text-base-content">
-        Alignement <span class="font-mono text-primary">{{ alignement.id_alignement }}</span>
+        Alignement : <span class="font-mono text-primary">{{ alignement }}</span>
       </h1>
-      <p class="text-sm text-base-content/40 mt-0.5">{{ alignement.id_voie.libelle_long|default:"—" }}</p>
     </div>
     <a href="{% url 'backoffice:gestion_alignements' %}" class="btn btn-ghost btn-sm gap-2 shrink-0">
       <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -133,30 +132,32 @@
               <!-- Ligne 1 : Numéro début / Numéro fin -->
               <div>
                 <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">Numéro début</label>
-                <input type="number" name="numero_debut" value="{{ form.numero_debut.value|default:'0' }}"
+                <input type="number" name="numero_debut"
+                  value="{{ form.numero_debut.value|default:'0' }}"
                   class="input input-bordered w-full text-sm {% if form.numero_debut.errors %}input-error{% endif %}" />
-                {% if form.numero_debut.errors %}<p class="text-xs text-error mt-1">{{ form.numero_debut.errors|join:", " }}</p>{% endif %}
+                {% if form.numero_debut.errors %}
+                  <p class="text-xs text-error mt-1">{{ form.numero_debut.errors|join:", " }}</p>
+                {% elif alignement %}
+                  <p class="text-xs text-base-content/40 mt-1">
+                    Adresse calculée : <span class="font-medium">{{ alignement.adresse_debut|default:"—" }}</span>
+                  </p>
+                {% endif %}
               </div>
               <div>
                 <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">Numéro fin</label>
-                <input type="number" name="numero_fin" value="{{ form.numero_fin.value|default:'0' }}"
+                <input type="number" name="numero_fin"
+                  value="{{ form.numero_fin.value|default:'0' }}"
                   class="input input-bordered w-full text-sm {% if form.numero_fin.errors %}input-error{% endif %}" />
-                {% if form.numero_fin.errors %}<p class="text-xs text-error mt-1">{{ form.numero_fin.errors|join:", " }}</p>{% endif %}
+                {% if form.numero_fin.errors %}
+                  <p class="text-xs text-error mt-1">{{ form.numero_fin.errors|join:", " }}</p>
+                {% elif alignement %}
+                  <p class="text-xs text-base-content/40 mt-1">
+                    Adresse calculée : <span class="font-medium">{{ alignement.adresse_fin|default:"—" }}</span>
+                  </p>
+                {% endif %}
               </div>
 
-              <!-- Ligne 2 : Adresse début / Adresse fin -->
-              <div>
-                <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">Adresse début</label>
-                <input type="text" name="adresse_debut" value="{{ form.adresse_debut.value|default:'' }}"
-                  class="input input-bordered w-full text-sm" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">Adresse fin</label>
-                <input type="text" name="adresse_fin" value="{{ form.adresse_fin.value|default:'' }}"
-                  class="input input-bordered w-full text-sm" />
-              </div>
-
-              <!-- Ligne 3 : Suffixes début / Suffixes fin -->
+              <!-- Ligne 2 : Suffixes début / Suffixes fin -->
               <div>
                 <label class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">Suffixes début</label>
                 <div class="flex gap-2">
@@ -177,7 +178,7 @@
               <!-- Séparateur -->
               <div class="md:col-span-2"><hr class="border-base-200" /></div>
 
-              <!-- Ligne 4 : Parité / Commune -->
+              <!-- Ligne 3 : Parité / Commune -->
               <div>
                 <label for="id_parite" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">Parité</label>
                 <select name="parite" id="id_parite" class="select select-bordered w-full text-sm">
@@ -195,7 +196,7 @@
                 </select>
               </div>
 
-              <!-- Ligne 5 : Date -->
+              <!-- Ligne 4 : Date -->
               <div>
                 <label for="id_date" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">Date</label>
                 <input type="date" name="date" id="id_date" value="{{ form.date.value|date:'Y-m-d'|default:'' }}"
@@ -211,7 +212,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
               </svg>
-              Annuler
+              Retour à la liste
             </a>
             <button type="submit" class="btn btn-primary btn-sm gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">

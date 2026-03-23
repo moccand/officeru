@@ -227,7 +227,7 @@ class GestionAlignementsView(ListView):
     paginate_by         = 25
 
     def get_queryset(self):
-        qs = RuAlignement.objects.select_related('id_voie').order_by('id_alignement')
+        qs = RuAlignement.objects.select_related('id_voie').order_by('id_alignement').select_related('id_voie')
 
         q = self.request.GET.get('q', '').strip()
         if q:
@@ -315,12 +315,14 @@ class AlignementEditView(View):
     def _ctx(self, request, alignement, form, onglet):
         return {
             'active_page': 'gestion:alignements',
-            'breadcrumbs': _alignement_breadcrumbs(
-                {'label': f'Alignement {alignement.id_alignement}'}
-            ),
-            'menu_alerts':  get_menu_alerts(request),
-            'alignement':   alignement,
-            'form':         form,
+            'breadcrumbs': [
+                {'label': 'Gestion'},
+                {'label': 'Alignements', 'url': reverse('backoffice:gestion_alignements')},
+                {'label': str(alignement)},  # ← __str__ de l'alignement
+            ],
+            'menu_alerts': get_menu_alerts(request),
+            'alignement': alignement,
+            'form': form,
             'onglet_actif': onglet,
         }
 
@@ -329,7 +331,12 @@ class AlignementEditView(View):
         return onglet if onglet in ('alignement', 'regles') else 'alignement'
 
     def get(self, request, pk):
-        alignement = get_object_or_404(RuAlignement, pk=pk)
+        # pour rester sur un modele de donnée normalisé mais bénéficier des attributs de la voie de l'alignement
+        # il est mieux de passer à get_object_or_404 un queryset pour avoir une seule jointure et pas plein de SQL à l'usage dans la page
+        alignement = get_object_or_404(
+            RuAlignement.objects.select_related('id_voie'),
+            pk=pk
+        )
         onglet     = self._get_onglet(request)
         form       = AlignementForm(instance=alignement)
         return render(request, self.template_name,
@@ -442,7 +449,7 @@ class GestionVoiesView(ListView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['active_page'] = 'gestion:voies'
-        ctx['breadcrumbs'] = [{'label': 'Gestion'}, {'label': 'Référentiel des Voies'}]
+        ctx['breadcrumbs'] = [{'label': 'Gestion'}, {'label': 'Voies'}]
         ctx['menu_alerts'] = get_menu_alerts(self.request)
         return ctx
 

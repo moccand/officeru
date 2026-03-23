@@ -99,7 +99,7 @@ class AlignementForm(forms.ModelForm):
             'id_voie', 'id_parcelle',
             'numero_debut', 'adresse_debut',
             'suffixe_un_debut', 'suffixe_2_debut', 'suffixe_3_debut',
-            'numero_fin', 'adresse_fin',
+            #'numero_fin', 'adresse_fin',
             'suffixe_un_fin', 'suffixe_2_fin', 'suffixe_3_fin',
             'parite', 'commune', 'date',
         ]

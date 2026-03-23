@@ -56,12 +56,12 @@ class RuVoie(models.Model):
 
 class RuAlignement(models.Model):
     id_alignement = models.IntegerField(primary_key=True)
-    numero_debut = models.IntegerField(default=0)
+    numero_debut = models.IntegerField(default=0, null=False, blank=False)
     adresse_debut = models.CharField(max_length=50, default='')
     suffixe_un_debut = models.CharField(max_length=50, default='')
     suffixe_2_debut = models.CharField(max_length=50, default='')
     suffixe_3_debut = models.CharField(max_length=50, default='')
-    numero_fin = models.IntegerField(default=0)
+    numero_fin = models.IntegerField(default=0, null=False, blank=False)
     adresse_fin = models.CharField(max_length=50, default='')
     suffixe_un_fin = models.CharField(max_length=50, default='')
     suffixe_2_fin = models.CharField(max_length=50, default='')
@@ -71,7 +71,8 @@ class RuAlignement(models.Model):
         on_delete=models.PROTECT, # ← Django lève une ProtectedError si on tente de supprimer
         default=0,
         db_column='id_voie',
-        related_name='alignements'
+        related_name='alignements',
+        null=False, blank=False
     )
     parite = models.BooleanField(default=False)
     id_parcelle = models.ForeignKey(
@@ -79,7 +80,8 @@ class RuAlignement(models.Model):
         on_delete=models.SET_DEFAULT,
         default=0,
         db_column='id_parcelle',
-        related_name='alignements'
+        related_name='alignements',
+        null=False, blank=False
     )
     commune = models.IntegerField(default=0)
     date = models.DateField(null=True, blank=True)
@@ -87,8 +89,36 @@ class RuAlignement(models.Model):
     class Meta:
         db_table = 'ru_alignement'
 
+
+    def _construire_adresse(self, numero, suffixe1, suffixe2, suffixe3):
+        """Concatène numéro et suffixes en retirant les parties vides."""
+        parties = [str(numero)] if numero else []
+        for s in (suffixe1, suffixe2, suffixe3):
+            if s and s.strip():
+                parties.append(s.strip())
+        return ' '.join(parties)
+
+    def save(self, *args, **kwargs):
+        self.adresse_debut = self._construire_adresse(
+            self.numero_debut,
+            self.suffixe_un_debut,
+            self.suffixe_2_debut,
+            self.suffixe_3_debut,
+        )
+        self.adresse_fin = self._construire_adresse(
+            self.numero_fin,
+            self.suffixe_un_fin,
+            self.suffixe_2_fin,
+            self.suffixe_3_fin,
+        )
+        super().save(*args, **kwargs)
+
+
     def __str__(self):
-        return f'Alignement {self.id_alignement}'
+        voie = self.id_voie.libelle_long if self.id_voie_id else ''
+        if self.adresse_debut == self.adresse_fin:
+            return f'{self.adresse_debut}, {voie}'.strip(', ')
+        return f'du {self.adresse_debut} au {self.adresse_fin}, {voie}'.strip(', ')
 
 
 class RuRegle(models.Model):

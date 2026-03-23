@@ -10,6 +10,25 @@
   </p>
 {% endblock %}
 
+
+{% block page_header %}
+  <div class="fade-in delay-1 mb-6 flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-base-content">
+        Voie : <span class="font-mono text-primary">{{ voie }}</span>
+      </h1>
+    </div>
+    <a href="{% url 'backoffice:gestion_voies' %}" class="btn btn-ghost btn-sm gap-2 shrink-0">
+      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+      Retour à la liste
+    </a>
+  </div>
+{% endblock %}
+
+
+
 {% block content %}
 
   <form method="post" action="" class="space-y-5 fade-in delay-1 max-w-3xl">
@@ -28,7 +47,7 @@
 
       <div class="px-6 py-4 border-b border-base-200">
         <p class="text-sm font-semibold text-base-content">Informations de la voie</p>
-        {% block card_subtitle %}<p class="text-xs text-base-content/40 mt-0.5">ID voie : {{ voie.pk }}</p>{% endblock %}
+        {% block card_subtitle %}<p class="text-xs text-base-content/40 mt-0.5">ID : {{ voie.pk }}</p>{% endblock %}
       </div>
 
       <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -120,7 +139,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
           </svg>
-          Annuler
+          Retour à la liste
         </a>
 
         <button type="submit" class="btn btn-primary btn-sm gap-2">
