@@ -178,6 +178,30 @@
     </nav>
 
         <div class="px-4 py-3 border-t border-base-200 space-y-2">
+
+      {# ── Taille du texte ── #}
+      <div>
+        <p class="text-[10px] uppercase tracking-widest text-base-content/30 mb-1.5 font-semibold px-1">Taille du texte</p>
+        <div class="join w-full" id="font-size-picker">
+          <button onclick="setFontSize('sm')" id="font-btn-sm"
+            class="join-item btn btn-sm flex-1 font-normal"
+            title="Texte compact">
+            <span class="leading-none" style="font-size:11px;font-weight:600">A</span>
+          </button>
+          <button onclick="setFontSize('md')" id="font-btn-md"
+            class="join-item btn btn-sm flex-1 font-normal"
+            title="Taille normale">
+            <span class="leading-none" style="font-size:14px;font-weight:600">A</span>
+          </button>
+          <button onclick="setFontSize('lg')" id="font-btn-lg"
+            class="join-item btn btn-sm flex-1 font-normal"
+            title="Texte agrandi">
+            <span class="leading-none" style="font-size:17px;font-weight:600">A</span>
+          </button>
+        </div>
+      </div>
+
+      {# ── Thème ── #}
       <div class="relative" id="theme-picker-container">
         <div id="theme-dropdown-panel" class="bg-base-100 border border-base-200 rounded-box shadow-xl p-3">
           <p class="text-[10px] uppercase tracking-widest text-base-content/30 mb-2 font-semibold px-1">Apparence</p>

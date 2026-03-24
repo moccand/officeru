@@ -1,5 +1,41 @@
 <script>
 // ══════════════════════════════════════════════════════════════
+// TAILLE DES POLICES — persisté en localStorage (côté client)
+// ══════════════════════════════════════════════════════════════
+const RU_FONT_SIZES = {
+  sm: { value: '90%',    label: 'Compact' },
+  md: { value: '100%',   label: 'Normal'  },
+  lg: { value: '112.5%', label: 'Grand'   },
+};
+
+function setFontSize(size) {
+  if (!RU_FONT_SIZES[size]) return;
+  document.documentElement.style.fontSize = RU_FONT_SIZES[size].value;
+  localStorage.setItem('ru_font_size', size);
+  updateFontButtons(size);
+}
+
+function updateFontButtons(size) {
+  Object.keys(RU_FONT_SIZES).forEach(function(s) {
+    const btn = document.getElementById('font-btn-' + s);
+    if (!btn) return;
+    const active = s === size;
+    btn.classList.toggle('btn-primary', active);
+    btn.classList.toggle('btn-ghost',   active);
+    btn.classList.toggle('btn-outline', !active);
+  });
+}
+
+(function initFontSize() {
+  const saved = localStorage.getItem('ru_font_size') || 'md';
+  // La font-size est déjà appliquée par le script inline dans <head> ;
+  // on met juste à jour l'état visuel des boutons après le DOM.
+  document.addEventListener('DOMContentLoaded', function() {
+    updateFontButtons(saved);
+  });
+})();
+
+// ══════════════════════════════════════════════════════════════
 // THÈMES RU — persisté en session Django via POST /set-theme/
 // ══════════════════════════════════════════════════════════════
 const RU_THEMES = [
