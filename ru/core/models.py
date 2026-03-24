@@ -8,13 +8,13 @@ class RuParcelle(models.Model):
         ARCHIVEE  = 'ARCHIVEE',  'Archivée'
 
     id_parcelle = models.IntegerField(primary_key=True)
-    identifiant = models.CharField(max_length=50, default='')
-    dep = models.IntegerField(default=0)
-    insee_com = models.IntegerField(default=0)
-    insee_com_absorbee = models.CharField(max_length=50, default='')
-    section = models.CharField(max_length=50, default='')
-    numero = models.CharField(max_length=50, default='')
-    m2_dgfip = models.IntegerField(default=0)
+    identifiant = models.CharField(max_length=50, blank=False, null=False)
+    dep = models.IntegerField(blank=False, null=False)
+    insee_com = models.IntegerField(blank=False, null=False)
+    insee_com_absorbee = models.CharField(max_length=50, default='000', blank=True)
+    section = models.CharField(max_length=50, blank=False, null=False)
+    numero = models.CharField(max_length=50, blank=False, null=False)
+    m2_dgfip = models.IntegerField(default=0, blank=True)
     enclave = models.SmallIntegerField(null=True, blank=True)
     statut = models.CharField(
         max_length=20,
@@ -39,9 +39,9 @@ class RuVoie(models.Model):
     id_voie = models.IntegerField(primary_key=True)
     libelle_long = models.TextField(null=False, blank=False)
     libelle_court = models.TextField(null=False, blank=False)
-    code_voie_rivoli = models.CharField(max_length=10, default='', null=False, blank=False)
-    code_voie_ville = models.CharField(max_length=10, default='', null=False, blank=False)
-    voie_privee =  models.BooleanField(default=False)
+    code_voie_rivoli = models.CharField(max_length=10, null=False, blank=False)
+    code_voie_ville = models.CharField(max_length=10, default='', blank=True)
+    voie_privee =  models.BooleanField(default=False, blank=True)
     date = models.DateField(null=True, blank=True)
 
     class Meta:
@@ -57,15 +57,15 @@ class RuVoie(models.Model):
 class RuAlignement(models.Model):
     id_alignement = models.IntegerField(primary_key=True)
     numero_debut = models.IntegerField(default=0, null=False, blank=False)
-    adresse_debut = models.CharField(max_length=50, default='')
-    suffixe_un_debut = models.CharField(max_length=50, default='')
-    suffixe_2_debut = models.CharField(max_length=50, default='')
-    suffixe_3_debut = models.CharField(max_length=50, default='')
+    adresse_debut = models.CharField(max_length=50, default='', blank=True)
+    suffixe_un_debut = models.CharField(max_length=50, default='', blank=True)
+    suffixe_2_debut = models.CharField(max_length=50, default='', blank=True)
+    suffixe_3_debut = models.CharField(max_length=50, default='', blank=True)
     numero_fin = models.IntegerField(default=0, null=False, blank=False)
-    adresse_fin = models.CharField(max_length=50, default='')
-    suffixe_un_fin = models.CharField(max_length=50, default='')
-    suffixe_2_fin = models.CharField(max_length=50, default='')
-    suffixe_3_fin = models.CharField(max_length=50, default='')
+    adresse_fin = models.CharField(max_length=50, default='', blank=True)
+    suffixe_un_fin = models.CharField(max_length=50, default='', blank=True)
+    suffixe_2_fin = models.CharField(max_length=50, default='', blank=True)
+    suffixe_3_fin = models.CharField(max_length=50, default='', blank=True)
     id_voie = models.ForeignKey(
         RuVoie,
         on_delete=models.PROTECT, # ← Django lève une ProtectedError si on tente de supprimer
@@ -83,7 +83,7 @@ class RuAlignement(models.Model):
         related_name='alignements',
         null=False, blank=False
     )
-    commune = models.IntegerField(default=0)
+    commune = models.IntegerField(null=False, blank=False)
     date = models.DateField(null=True, blank=True)
 
     class Meta:
@@ -125,14 +125,14 @@ class RuRegle(models.Model):
     id_regle = models.IntegerField(primary_key=True)
     code = models.CharField(max_length=50, default='')
     libelle = models.TextField(null=True, blank=True)
-    doc_urba = models.CharField(max_length=50, default='')
-    autorite = models.CharField(max_length=50, default='')
-    url_doc = models.CharField(max_length=255, default='')
-    standard_cnig = models.CharField(max_length=50, default='')
-    type_cnig = models.CharField(max_length=50, default='')
-    code_cnig = models.CharField(max_length=50, default='')
-    sous_code_cnig = models.CharField(max_length=50, default='')
-    cible = models.CharField(max_length=50, default='')
+    doc_urba = models.CharField(max_length=50, default='', blank=True)
+    autorite = models.CharField(max_length=50, default='', blank=True)
+    url_doc = models.CharField(max_length=255, default='', blank=True)
+    standard_cnig = models.CharField(max_length=50, default='', blank=True)
+    type_cnig = models.CharField(max_length=50, default='', blank=True)
+    code_cnig = models.CharField(max_length=50, default='', blank=True)
+    sous_code_cnig = models.CharField(max_length=50, default='', blank=True)
+    cible = models.CharField(max_length=50, default='', blank=True)
     date = models.DateField(null=True, blank=True)
     phrase_chatbot = models.TextField(null=True, blank=True)
     type_cartads = models.CharField(max_length=5, null=True, blank=True)
