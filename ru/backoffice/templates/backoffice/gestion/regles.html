@@ -31,6 +31,13 @@
             aria-label="Rechercher une règle" />
         </label>
 
+        <select name="type_regle" class="select select-bordered select-sm w-44 text-sm" aria-label="Filtrer par type de règle">
+          <option value="">Type de règle (tous)</option>
+          {% for value, label in type_regle_choices %}
+            <option value="{{ value }}" {% if request.GET.type_regle == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+
         <a href="{% url 'backoffice:gestion_regles' %}"
           class="btn btn-ghost btn-sm gap-1.5 text-base-content/40 hover:text-base-content">
           <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -69,6 +76,7 @@
         <thead>
           <tr class="text-xs text-base-content/40 uppercase tracking-wide bg-base-200/50 border-b border-base-200">
             {% include "backoffice/partials/sortable_th.html" with col="code" label="Code" %}
+            {% include "backoffice/partials/sortable_th.html" with col="type_regle" label="Type règle" %}
             {% include "backoffice/partials/sortable_th.html" with col="libelle" label="Libellé" %}
             {% include "backoffice/partials/sortable_th.html" with col="doc_urba" label="Doc. urba" %}
             {% include "backoffice/partials/sortable_th.html" with col="autorite" label="Autorité" %}
@@ -83,6 +91,9 @@
           {% for r in regles %}
             <tr class="data-row border-b border-base-100 last:border-0">
               <td class="font-mono text-xs text-primary font-medium">{{ r.code }}</td>
+              <td class="text-xs">
+                <span class="badge badge-ghost badge-sm">{{ r.get_type_regle_display }}</span>
+              </td>
               <td class="text-xs max-w-[14rem]">{{ r.libelle|default:""|truncatechars:48 }}</td>
               <td class="text-base-content/70 text-xs">{{ r.doc_urba|default:"" }}</td>
               <td class="text-base-content/70 text-xs">{{ r.autorite|default:"" }}</td>
@@ -114,7 +125,7 @@
             </tr>
           {% empty %}
             <tr>
-              <td colspan="9" class="text-center py-12 text-base-content/30 text-sm">
+              <td colspan="10" class="text-center py-12 text-base-content/30 text-sm">
                 Aucune règle ne correspond aux critères
               </td>
             </tr>

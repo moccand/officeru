@@ -32,6 +32,7 @@ from .gestion_misc import (
 
 from .gestion_parcelles import (
     ParcellesAutocompleteView,
+    ReglesParcelleAutocompleteView,
     GestionParcellesView,
     ParcelleAjouterView,
     ParcelleEditView,
@@ -92,7 +93,7 @@ __all__ = [
     # gestion misc
     'GestionMutationsView', 'GestionAnalyseReferentielsView', 'GestionDetailsView',
     # gestion parcelles
-    'ParcellesAutocompleteView', 'GestionParcellesView',
+    'ParcellesAutocompleteView', 'ReglesParcelleAutocompleteView', 'GestionParcellesView',
     'ParcelleAjouterView', 'ParcelleEditView', 'ParcelleSupprimerView',
     # gestion alignements
     '_alignement_parcelle_autocomplete_prefill',

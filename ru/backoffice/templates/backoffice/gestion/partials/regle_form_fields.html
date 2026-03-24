@@ -8,6 +8,14 @@
     {% if form.code.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.code.errors|join:", " }}</p>{% endif %}
   </div>
 
+  <div class="ru-form-field">
+    <label for="{{ form.type_regle.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Type de règle" required=form.type_regle.field.required only %}
+    </label>
+    {{ form.type_regle }}
+    {% if form.type_regle.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.type_regle.errors|join:", " }}</p>{% endif %}
+  </div>
+
   <div class="ru-form-field md:col-span-2">
     <label for="{{ form.libelle.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
       {% include "backoffice/partials/ru_label_required.html" with label_text="Libellé" required=form.libelle.field.required only %}

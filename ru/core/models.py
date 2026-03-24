@@ -122,8 +122,19 @@ class RuAlignement(models.Model):
 
 
 class RuRegle(models.Model):
+    class TypeRegle(models.TextChoices):
+        PARCELLE = 'PARCELLE', 'Parcelle'
+        ALIGNEMENT = 'ALIGNEMENT', 'Alignement'
+
     id_regle = models.IntegerField(primary_key=True)
     code = models.CharField(max_length=50, default='')
+    type_regle = models.CharField(
+        max_length=10,
+        choices=TypeRegle.choices,
+        null=False,
+        blank=False,
+        default=TypeRegle.PARCELLE,
+    )
     libelle = models.TextField(null=True, blank=True)
     doc_urba = models.CharField(max_length=50, default='', blank=True)
     autorite = models.CharField(max_length=50, default='', blank=True)

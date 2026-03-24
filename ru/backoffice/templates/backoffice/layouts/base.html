@@ -164,7 +164,9 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('#messages-container .alert').forEach(function (alert) {
-      var ms = alert.classList.contains('alert-error') ? ERROR_DISMISS_MS : SUCCESS_DISMISS_MS;
+      var ms = (alert.classList.contains('alert-error') || alert.classList.contains('ru-quick-dismiss'))
+        ? ERROR_DISMISS_MS
+        : SUCCESS_DISMISS_MS;
       setTimeout(function () { fadeRemoveAlert(alert); }, ms);
     });
     document.querySelectorAll('.ru-form-summary-error').forEach(function (summary) {

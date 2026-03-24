@@ -30,10 +30,14 @@ class GestionReglesView(ListView):
                 | Q(libelle__icontains=q)
                 | Q(phrase_chatbot__icontains=q)
             )
+        type_regle = self.request.GET.get('type_regle', '').strip()
+        type_regles_valides = {c[0] for c in RuRegle.TypeRegle.choices}
+        if type_regle in type_regles_valides:
+            qs = qs.filter(type_regle=type_regle)
         sort = self.request.GET.get('sort', 'code')
         dire = self.request.GET.get('dir', 'asc')
         cols = {
-            'code', 'libelle', 'doc_urba', 'autorite',
+            'code', 'type_regle', 'libelle', 'doc_urba', 'autorite',
             'standard_cnig', 'type_cnig', 'code_cnig', 'sous_code_cnig',
         }
         if sort in cols:
@@ -49,6 +53,7 @@ class GestionReglesView(ListView):
         ctx['active_page'] = 'gestion:regles'
         ctx['breadcrumbs'] = [{'label': 'Gestion'}, {'label': 'Règles'}]
         ctx['menu_alerts'] = get_menu_alerts(self.request)
+        ctx['type_regle_choices'] = RuRegle.TypeRegle.choices
         return ctx
 
 

@@ -1,10 +1,10 @@
 {% if messages %}
   <div id="messages-container" class="space-y-2 mb-4 fade-in">
     {% for message in messages %}
-      <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %} alert-soft flex items-center justify-between gap-3">
+      <div class="alert {% if 'error' in message.tags %}alert-error{% else %}alert-success{% endif %} {% if 'quick-dismiss' in message.tags %}ru-quick-dismiss{% endif %} alert-soft flex items-center justify-between gap-3">
         <div class="flex items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            {% if message.tags == 'error' %}
+            {% if 'error' in message.tags %}
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
             {% else %}
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>

@@ -47,6 +47,9 @@ urlpatterns = [
     path('api/parcelles-autocomplete/',
         views.ParcellesAutocompleteView.as_view(),
         name='parcelles_autocomplete'),
+    path('api/regles-parcelle-autocomplete/',
+        views.ReglesParcelleAutocompleteView.as_view(),
+        name='regles_parcelle_autocomplete'),
 
     path('gestion/parcelles/',
          views.GestionParcellesView.as_view(),

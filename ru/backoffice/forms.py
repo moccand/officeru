@@ -138,7 +138,7 @@ class RuRegleForm(RuModelFormMixin, forms.ModelForm):
     class Meta:
         model = RuRegle
         fields = [
-            'code', 'libelle', 'doc_urba', 'autorite', 'url_doc',
+            'code', 'type_regle', 'libelle', 'doc_urba', 'autorite', 'url_doc',
             'standard_cnig', 'type_cnig', 'code_cnig', 'sous_code_cnig',
             'cible', 'date', 'phrase_chatbot', 'type_cartads',
         ]
@@ -164,6 +164,8 @@ class RuRegleForm(RuModelFormMixin, forms.ModelForm):
                 continue
             if isinstance(field.widget, forms.TextInput):
                 field.widget.attrs.setdefault('class', 'input input-bordered w-full text-sm')
+            elif isinstance(field.widget, forms.Select):
+                field.widget.attrs.setdefault('class', 'select select-bordered w-full text-sm')
 
     def save(self, commit=True):
         regle = super().save(commit=False)
@@ -228,6 +230,42 @@ class RuParcelleForm(RuModelFormMixin, forms.ModelForm):
         if commit:
             parcelle.save()
         return parcelle
+
+
+class RuDetailParcelleAddForm(forms.Form):
+    """
+    Petit formulaire d'ajout de RuDetail depuis l'onglet
+    « Règles sur la parcelle ».
+    """
+    use_required_attribute = False
+
+    id_regle = forms.IntegerField(required=True, widget=forms.HiddenInput())
+    regle_search = forms.CharField(required=False)
+    valeur = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'input input-bordered w-full text-sm',
+            'placeholder': 'Valeur libre…',
+        }),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['regle_search'].widget.attrs.update({
+            'class': 'grow bg-transparent text-sm text-base-content placeholder:text-base-content/30 min-w-0',
+            'style': 'outline:none;box-shadow:none;border:none;',
+            'placeholder': 'Rechercher une règle (code ou libellé)…',
+            'autocomplete': 'off',
+            'aria-autocomplete': 'list',
+            'aria-controls': 'detail-regle-suggestions',
+        })
+
+    def clean_id_regle(self):
+        regle_id = self.cleaned_data.get('id_regle')
+        exists = RuRegle.objects.filter(pk=regle_id, type_regle=RuRegle.TypeRegle.PARCELLE).exists()
+        if not exists:
+            raise forms.ValidationError("Veuillez sélectionner une règle via l'autocomplétion.")
+        return regle_id
 
 
 # ═══════════════════════════════════════════════════════════
