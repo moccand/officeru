@@ -80,6 +80,9 @@
             {% include "backoffice/partials/sortable_th.html" with col="insee_com_absorbee" label="INSEE absorbée" %}
             {% include "backoffice/partials/sortable_th.html" with col="section" label="Section" %}
             {% include "backoffice/partials/sortable_th.html" with col="numero" label="Numéro" %}
+            {% include "backoffice/partials/sortable_th.html" with col="date_creation" label="Création" %}
+            {% include "backoffice/partials/sortable_th.html" with col="date_modification" label="Modification" %}
+            {% include "backoffice/partials/sortable_th.html" with col="date_modif_regles" label="Modif. règles" %}
             <th class="font-semibold w-24 text-center">Actions</th>
           </tr>
         </thead>
@@ -91,6 +94,15 @@
               <td class="text-base-content/70 text-xs">{{ p.insee_com_absorbee|default:"" }}</td>
               <td class="text-base-content/70 text-xs">{{ p.section|default:"" }}</td>
               <td class="text-base-content/70 text-xs">{{ p.numero|default:"" }}</td>
+              <td class="text-base-content/60 text-xs whitespace-nowrap tabular-nums">
+                {% if p.date_creation %}{{ p.date_creation|date:"d/m/Y" }}{% else %}—{% endif %}
+              </td>
+              <td class="text-base-content/60 text-xs whitespace-nowrap tabular-nums">
+                {% if p.date_modification %}{{ p.date_modification|date:"d/m/Y" }}{% else %}—{% endif %}
+              </td>
+              <td class="text-base-content/60 text-xs whitespace-nowrap tabular-nums">
+                {% if p.date_modif_regles %}{{ p.date_modif_regles|date:"d/m/Y" }}{% else %}—{% endif %}
+              </td>
               <td>
                 <div class="flex items-center justify-center gap-0.5">
                   <a href="{% url 'backoffice:parcelle_edit' p.pk %}"
@@ -123,7 +135,7 @@
             </tr>
           {% empty %}
             <tr>
-              <td colspan="6" class="text-center py-12 text-base-content/30 text-sm">
+              <td colspan="9" class="text-center py-12 text-base-content/30 text-sm">
                 Aucune parcelle ne correspond aux critères
               </td>
             </tr>

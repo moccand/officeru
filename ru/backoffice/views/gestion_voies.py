@@ -81,7 +81,7 @@ class GestionVoiesView(ListView):
         dire = self.request.GET.get('dir', 'asc')
         cols = {
             'libelle_long', 'code_voie_ville', 'code_voie_rivoli',
-            'voie_privee', 'date', 'nb_alignements',
+            'voie_privee', 'date_creation', 'date_modification', 'nb_alignements',
         }
         if sort in cols:
             qs = qs.order_by(f'-{sort}' if dire == 'desc' else sort)

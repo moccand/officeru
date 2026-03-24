@@ -34,11 +34,6 @@ urlpatterns = [
          views.ConsultationParcellesView.as_view(),
          name='consultation_parcelles'),
 
-    path('consultation/troncons/',
-         views.ConsultationTronconsView.as_view(),
-         name='consultation_troncons'),
-
-
     # ── Gestion ──────────────────────────────────────────────────────
     path('gestion/mutations/',
          views.GestionMutationsView.as_view(),
@@ -50,6 +45,9 @@ urlpatterns = [
     path('api/regles-parcelle-autocomplete/',
         views.ReglesParcelleAutocompleteView.as_view(),
         name='regles_parcelle_autocomplete'),
+    path('api/regles-alignement-autocomplete/',
+        views.ReglesAlignementAutocompleteView.as_view(),
+        name='regles_alignement_autocomplete'),
 
     path('gestion/parcelles/',
          views.GestionParcellesView.as_view(),
@@ -113,13 +111,13 @@ urlpatterns = [
          views.RegleSupprimerView.as_view(),
          name='regle_supprimer'),
 
+    path('gestion/gestion-avancee/',
+         views.GestionAvanceeView.as_view(),
+         name='gestion_avancee'),
+
     path('gestion/analyse-referentiels/',
          views.GestionAnalyseReferentielsView.as_view(),
          name='gestion_analyse_referentiels'),
-
-    path('gestion/details/',
-         views.GestionDetailsView.as_view(),
-         name='gestion_details'),
 
     # ── Export ───────────────────────────────────────────────────────
     path('export/exports-internet/',

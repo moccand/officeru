@@ -1,4 +1,24 @@
 from django.db import models
+from django.utils import timezone
+
+# from django.contrib.gis.db import models as gis_models
+
+
+def apply_ru_date_audit(instance):
+    """
+    Renseigne date_creation (uniquement à la création, si encore vide)
+    et date_modification (à chaque enregistrement).
+    Les imports seed peuvent fixer les deux avant le premier save.
+    """
+    today = timezone.localdate()
+    if instance._state.adding:
+        if getattr(instance, 'date_creation', None) is None:
+            instance.date_creation = today
+        if getattr(instance, 'date_modification', None) is None:
+            instance.date_modification = today
+    else:
+        instance.date_modification = today
+
 
 class RuParcelle(models.Model):
 
@@ -21,7 +41,13 @@ class RuParcelle(models.Model):
         choices=Statut.choices,
         default=Statut.A_VALIDER,
     )
-    date = models.DateField(null=True, blank=True)
+    date_creation = models.DateField(null=True, blank=True)
+    date_modification = models.DateField(null=True, blank=True)
+    date_modif_regles = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Dernière modification des règles (détails)",
+    )
 
     class Meta:
         db_table = 'ru_parcelle'
@@ -34,6 +60,10 @@ class RuParcelle(models.Model):
     def __str__(self):
         return f'{self.identifiant} ({self.id_parcelle})'
 
+    def save(self, *args, **kwargs):
+        apply_ru_date_audit(self)
+        super().save(*args, **kwargs)
+
 
 class RuVoie(models.Model):
     id_voie = models.IntegerField(primary_key=True)
@@ -42,7 +72,8 @@ class RuVoie(models.Model):
     code_voie_rivoli = models.CharField(max_length=10, null=False, blank=False)
     code_voie_ville = models.CharField(max_length=10, default='', blank=True)
     voie_privee =  models.BooleanField(default=False, blank=True)
-    date = models.DateField(null=True, blank=True)
+    date_creation = models.DateField(null=True, blank=True)
+    date_modification = models.DateField(null=True, blank=True)
 
     class Meta:
         db_table = 'ru_voie'
@@ -52,6 +83,10 @@ class RuVoie(models.Model):
 
     def __str__(self):
         return self.libelle_long or self.libelle_court or str(self.id_voie)
+
+    def save(self, *args, **kwargs):
+        apply_ru_date_audit(self)
+        super().save(*args, **kwargs)
 
 
 class RuAlignement(models.Model):
@@ -84,7 +119,13 @@ class RuAlignement(models.Model):
         null=False, blank=False
     )
     commune = models.IntegerField(null=False, blank=False)
-    date = models.DateField(null=True, blank=True)
+    date_creation = models.DateField(null=True, blank=True)
+    date_modification = models.DateField(null=True, blank=True)
+    date_modif_regles = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Dernière modification des règles (détails)",
+    )
 
     class Meta:
         db_table = 'ru_alignement'
@@ -111,6 +152,7 @@ class RuAlignement(models.Model):
             self.suffixe_2_fin,
             self.suffixe_3_fin,
         )
+        apply_ru_date_audit(self)
         super().save(*args, **kwargs)
 
 
@@ -144,7 +186,8 @@ class RuRegle(models.Model):
     code_cnig = models.CharField(max_length=50, default='', blank=True)
     sous_code_cnig = models.CharField(max_length=50, default='', blank=True)
     cible = models.CharField(max_length=50, default='', blank=True)
-    date = models.DateField(null=True, blank=True)
+    date_creation = models.DateField(null=True, blank=True)
+    date_modification = models.DateField(null=True, blank=True)
     phrase_chatbot = models.TextField(null=True, blank=True)
     type_cartads = models.CharField(max_length=5, null=True, blank=True)
 
@@ -158,6 +201,10 @@ class RuRegle(models.Model):
     def __str__(self):
         return f'{self.code} - {self.libelle or ""}'
 
+    def save(self, *args, **kwargs):
+        apply_ru_date_audit(self)
+        super().save(*args, **kwargs)
+
 
 class RuDetail(models.Model):
     id_detail = models.IntegerField(primary_key=True)
@@ -170,13 +217,14 @@ class RuDetail(models.Model):
     )
     id_regle = models.ForeignKey(
         RuRegle,
-        on_delete=models.SET_DEFAULT,
+        on_delete=models.CASCADE,
         default=0,
         db_column='id_regle',
-        related_name='details'
+        related_name='details',
     )
     valeur = models.TextField(null=True, blank=True)
-    date = models.DateField(null=True, blank=True)
+    date_creation = models.DateField(null=True, blank=True)
+    date_modification = models.DateField(null=True, blank=True)
 
     class Meta:
         db_table = 'ru_detail'
@@ -188,6 +236,32 @@ class RuDetail(models.Model):
 
     def __str__(self):
         return f'Detail {self.id_detail}'
+
+    def _touch_parcelle_date_modif_regles(self, parcelle_id):
+        if not parcelle_id:
+            return
+        RuParcelle.objects.filter(pk=parcelle_id).update(
+            date_modif_regles=timezone.localdate()
+        )
+
+    def save(self, *args, **kwargs):
+        prev_parcelle_id = None
+        if self.pk:
+            prev_parcelle_id = (
+                RuDetail.objects.filter(pk=self.pk)
+                .values_list('id_parcelle_id', flat=True)
+                .first()
+            )
+        apply_ru_date_audit(self)
+        super().save(*args, **kwargs)
+        self._touch_parcelle_date_modif_regles(self.id_parcelle_id)
+        if prev_parcelle_id and prev_parcelle_id != self.id_parcelle_id:
+            self._touch_parcelle_date_modif_regles(prev_parcelle_id)
+
+    def delete(self, *args, **kwargs):
+        pid = self.id_parcelle_id
+        super().delete(*args, **kwargs)
+        self._touch_parcelle_date_modif_regles(pid)
 
 
 class RuDetailAlignement(models.Model):
@@ -201,13 +275,14 @@ class RuDetailAlignement(models.Model):
     )
     id_regle = models.ForeignKey(
         RuRegle,
-        on_delete=models.SET_DEFAULT,
+        on_delete=models.CASCADE,
         default=0,
         db_column='id_regle',
-        related_name='details_alignement'
+        related_name='details_alignement',
     )
     valeur = models.TextField(null=True, blank=True)
-    date = models.DateField(null=True, blank=True)
+    date_creation = models.DateField(null=True, blank=True)
+    date_modification = models.DateField(null=True, blank=True)
 
     class Meta:
         db_table = 'ru_detail_alignement'
@@ -220,3 +295,51 @@ class RuDetailAlignement(models.Model):
 
     def __str__(self):
         return f'DetailAlignement {self.id_detail}'
+
+    def _touch_alignement_date_modif_regles(self, alignement_id):
+        if not alignement_id:
+            return
+        RuAlignement.objects.filter(pk=alignement_id).update(
+            date_modif_regles=timezone.localdate()
+        )
+
+    def save(self, *args, **kwargs):
+        prev_alignement_id = None
+        if self.pk:
+            prev_alignement_id = (
+                RuDetailAlignement.objects.filter(pk=self.pk)
+                .values_list('id_alignement_id', flat=True)
+                .first()
+            )
+        apply_ru_date_audit(self)
+        super().save(*args, **kwargs)
+        self._touch_alignement_date_modif_regles(self.id_alignement_id)
+        if prev_alignement_id and prev_alignement_id != self.id_alignement_id:
+            self._touch_alignement_date_modif_regles(prev_alignement_id)
+
+    def delete(self, *args, **kwargs):
+        aid = self.id_alignement_id
+        super().delete(*args, **kwargs)
+        self._touch_alignement_date_modif_regles(aid)
+
+
+"""
+class RuParcelleGis(models.Model):
+    id_parcellegis = models.AutoField(primary_key=True)
+    geom = gis_models.PolygonField(srid=4326)
+    millesime = models.CharField(max_length=10, null=False, blank=False)
+    dep = models.IntegerField(blank=False, null=False)
+    insee_com = models.IntegerField(blank=False, null=False)
+    insee_com_absorbee = models.CharField(max_length=50, default='000', blank=True)
+    section = models.CharField(max_length=50, blank=False, null=False)
+    numero = models.CharField(max_length=50, blank=False, null=False)
+
+    class Meta:
+        db_table = 'ru_parcellegis'
+        indexes = [
+            models.Index(fields=['dep', 'insee_com', 'section', 'numero'], name='idx_ru_parcellegis_ref'),
+        ]
+
+    def __str__(self):
+        return f'{self.dep}-{self.insee_com}-{self.section}-{self.numero} ({self.millesime})'
+"""

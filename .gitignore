@@ -86,3 +86,4 @@ htmlcov/
 *.swp
 *.tmp
 
+/.venv_launch.bat

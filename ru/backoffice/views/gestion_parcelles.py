@@ -9,7 +9,6 @@ from django.db.models import Max
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.utils import timezone
 from django.views import View
 from django.views.generic import ListView
 
@@ -82,7 +81,10 @@ class GestionParcellesView(ListView):
 
         sort = self.request.GET.get('sort', 'identifiant')
         dire = self.request.GET.get('dir', 'asc')
-        cols = {'identifiant', 'insee_com', 'insee_com_absorbee', 'section', 'numero'}
+        cols = {
+            'identifiant', 'insee_com', 'insee_com_absorbee', 'section', 'numero',
+            'date_modif_regles', 'date_creation', 'date_modification',
+        }
         if sort in cols:
             qs = qs.order_by(f'-{sort}' if dire == 'desc' else sort)
         return qs
@@ -151,7 +153,8 @@ class ParcelleEditView(View):
                 'id_regle__code',
                 'id_regle__libelle',
                 'valeur',
-                'date',
+                'date_creation',
+                'date_modification',
             )[:500]
         )
 
@@ -200,7 +203,6 @@ class ParcelleEditView(View):
                     id_parcelle=parcelle,
                     id_regle_id=add_form.cleaned_data['id_regle'],
                     valeur=add_form.cleaned_data.get('valeur', ''),
-                    date=timezone.localdate(),
                 )
                 messages.success(
                     request,

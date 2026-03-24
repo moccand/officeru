@@ -16,7 +16,7 @@ from django.views.generic import TemplateView
 User = get_user_model()
 
 # ── Constantes ───────────────────────────────────────────────
-GROUPES_SYSTEME = {'ADMINISTRATEUR_TECH', 'ADMINISTRATEUR_FONC', 'EDITEUR', 'VALIDATEUR'}
+GROUPES_SYSTEME = {'ADMINISTRATEUR_TECH', 'ADMINISTRATEUR_FONC', 'EDITEUR', 'VALIDATEUR', 'API_USER'}
 ALLOWED_THEMES  = {'light', 'dark', 'colorblind'}
 
 

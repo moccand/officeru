@@ -1,4 +1,4 @@
-{# Champs RuRegleForm — contexte : form #}
+{# Champs RuRegleForm — contexte : form ; regle (instance) optionnel pour affichage Création / Modification #}
 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
   <div class="ru-form-field md:col-span-2">
     <label for="{{ form.code.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
@@ -83,13 +83,9 @@
     {{ form.cible }}
     {% if form.cible.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.cible.errors|join:", " }}</p>{% endif %}
   </div>
-  <div class="ru-form-field">
-    <label for="{{ form.date.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
-      {% include "backoffice/partials/ru_label_required.html" with label_text="Date" required=form.date.field.required only %}
-    </label>
-    {{ form.date }}
-    {% if form.date.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.date.errors|join:", " }}</p>{% endif %}
-  </div>
+  {% if regle %}
+  {% include "backoffice/partials/ru_date_audit_readonly.html" with entity=regle %}
+  {% endif %}
 
   <div class="ru-form-field md:col-span-2">
     <label for="{{ form.phrase_chatbot.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">

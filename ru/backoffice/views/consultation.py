@@ -29,9 +29,3 @@ class ConsultationParcellesView(RuContextMixin, TemplateView):
         ctx['communes']             = ['75101', '75108', '75112', '75116']
         ctx['sections']             = ['AB', 'AC', 'BA', 'BB', 'CA']
         return ctx
-
-
-class ConsultationTronconsView(RuContextMixin, TemplateView):
-    template_name = 'backoffice/consultation/troncons.html'
-    active_page   = 'consultation:troncons'
-    breadcrumbs   = [{'label': 'Consultation'}, {'label': 'Tronçons'}]

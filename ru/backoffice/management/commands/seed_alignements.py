@@ -41,6 +41,7 @@ def date_aleatoire():
 def generer_alignement(id_alignement, voie, parcelle):
     num_debut = numero_aleatoire()
     num_fin   = num_debut + random.randint(2, 20) * 2  # toujours > début
+    d         = date_aleatoire()
 
     return RuAlignement(
         id_alignement  = id_alignement,
@@ -58,7 +59,8 @@ def generer_alignement(id_alignement, voie, parcelle):
         parite         = random.choice(PARITES),
         id_parcelle    = parcelle,
         commune        = int(voie.code_voie_ville) if voie.code_voie_ville.isdigit() else 75001,
-        date           = date_aleatoire(),
+        date_creation    = d,
+        date_modification = d,
     )
 
 

@@ -1,0 +1,14 @@
+{# Affichage en lecture seule de date_creation / date_modification — contexte : entity (instance modèle) #}
+<div class="ru-form-field">
+  <span class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">Création</span>
+  <div class="flex min-h-10 w-full items-center rounded-lg border border-base-300 bg-base-200/40 px-3 text-sm text-base-content/80 tabular-nums" role="status">
+    {% if entity.date_creation %}{{ entity.date_creation|date:"d/m/Y" }}{% else %}—{% endif %}
+  </div>
+</div>
+<div class="ru-form-field">
+  <span class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">Modification</span>
+  <div class="flex min-h-10 w-full items-center rounded-lg border border-base-300 bg-base-200/40 px-3 text-sm text-base-content/80 tabular-nums" role="status">
+    {% if entity.date_modification %}{{ entity.date_modification|date:"d/m/Y" }}{% else %}—{% endif %}
+  </div>
+  <p class="text-xs text-base-content/40 mt-1">La date de modification est mise à jour automatiquement à chaque enregistrement.</p>
+</div>

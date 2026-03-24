@@ -4,15 +4,16 @@ backoffice/views/gestion_alignements.py
 Vues CRUD pour les Alignements.
 """
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Max, Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views import View
 from django.views.generic import ListView
 
-from core.models import RuAlignement, RuParcelle, RuVoie
+from core.models import RuAlignement, RuDetailAlignement, RuParcelle, RuRegle, RuVoie
 
-from ..forms import AlignementForm
+from ..forms import AlignementForm, RuDetailAlignementAddForm
 from .base import _alignement_breadcrumbs, get_menu_alerts
 
 
@@ -45,6 +46,28 @@ def _alignement_parcelle_autocomplete_prefill(alignement):
     }
 
 
+class ReglesAlignementAutocompleteView(View):
+    def get(self, request):
+        q = request.GET.get('q', '').strip()
+        if len(q) < 2:
+            return JsonResponse({'results': []})
+        regles = (
+            RuRegle.objects
+            .filter(type_regle=RuRegle.TypeRegle.ALIGNEMENT)
+            .filter(Q(code__icontains=q) | Q(libelle__icontains=q))
+            .values('id_regle', 'code', 'libelle')[:15]
+        )
+        results = [
+            {
+                'id': r['id_regle'],
+                'label': r['code'] or str(r['id_regle']),
+                'codes': r['libelle'] or '',
+            }
+            for r in regles
+        ]
+        return JsonResponse({'results': results})
+
+
 class GestionAlignementsView(ListView):
     template_name       = 'backoffice/gestion/alignements.html'
     context_object_name = 'alignements'
@@ -69,8 +92,10 @@ class GestionAlignementsView(ListView):
 
         sort = self.request.GET.get('sort', 'id_alignement')
         dire = self.request.GET.get('dir', 'asc')
-        cols = {'id_alignement', 'id_voie', 'numero_debut',
-                'numero_fin', 'parite', 'commune', 'date'}
+        cols = {
+            'id_alignement', 'id_voie', 'numero_debut', 'numero_fin', 'parite',
+            'commune', 'date_creation', 'date_modification', 'date_modif_regles',
+        }
         if sort in cols:
             qs = qs.order_by(f'-{sort}' if dire == 'desc' else sort)
         return qs
@@ -115,7 +140,9 @@ class AlignementAjouterView(View):
         form = AlignementForm(request.POST)
         if form.is_valid():
             alignement = form.save()
-            return redirect('backoffice:alignement_edit', pk=alignement.pk)
+            return redirect(
+                f"{reverse('backoffice:alignement_edit', args=[alignement.pk])}?onglet=alignement"
+            )
         voie_initiale = None
         voie_pk = request.POST.get('id_voie', '')
         if voie_pk:
@@ -127,18 +154,59 @@ class AlignementAjouterView(View):
 class AlignementEditView(View):
     template_name = 'backoffice/gestion/alignement_edit.html'
 
-    def _ctx(self, request, alignement, form, onglet):
+    def _details_regles_alignement(self, request, alignement):
+        q = request.GET.get('q_detail', '').strip()
+        qs = (
+            RuDetailAlignement.objects
+            .select_related('id_regle')
+            .filter(
+                id_alignement=alignement.pk,
+                id_regle__type_regle='ALIGNEMENT',
+            )
+        )
+        if q:
+            qs = qs.filter(
+                Q(id_regle__phrase_chatbot__icontains=q)
+                | Q(id_regle__libelle__icontains=q)
+                | Q(id_regle__code__icontains=q)
+                | Q(valeur__icontains=q)
+            )
+        return list(
+            qs.order_by('id_detail').values(
+                'id_detail',
+                'id_regle_id',
+                'id_regle__code',
+                'id_regle__libelle',
+                'valeur',
+                'date_creation',
+                'date_modification',
+            )[:500]
+        )
+
+    def _ctx(
+        self,
+        request,
+        alignement,
+        form,
+        onglet,
+        details_regles,
+        add_detail_form=None,
+        show_add_detail_form=False,
+    ):
         ctx = {
-            'active_page':  'gestion:alignements',
-            'breadcrumbs':  [
+            'active_page':               'gestion:alignements',
+            'breadcrumbs':               [
                 {'label': 'Gestion'},
                 {'label': 'Alignements', 'url': reverse('backoffice:gestion_alignements')},
                 {'label': str(alignement)},
             ],
-            'menu_alerts':  get_menu_alerts(request),
-            'alignement':   alignement,
-            'form':         form,
-            'onglet_actif': onglet,
+            'menu_alerts':               get_menu_alerts(request),
+            'alignement':                alignement,
+            'form':                      form,
+            'onglet_actif':              onglet,
+            'details_regles_alignement': details_regles,
+            'add_detail_form':           add_detail_form or RuDetailAlignementAddForm(),
+            'show_add_detail_form':      show_add_detail_form,
         }
         ctx.update(_alignement_parcelle_autocomplete_prefill(alignement))
         return ctx
@@ -152,16 +220,76 @@ class AlignementEditView(View):
             RuAlignement.objects.select_related('id_voie', 'id_parcelle'),
             pk=pk,
         )
-        onglet = self._get_onglet(request)
-        form   = AlignementForm(instance=alignement)
-        return render(request, self.template_name,
-                      self._ctx(request, alignement, form, onglet))
+        onglet  = self._get_onglet(request)
+        form    = AlignementForm(instance=alignement)
+        details = self._details_regles_alignement(request, alignement)
+        show_add = request.GET.get('ajout') == '1' and onglet == 'regles'
+        return render(
+            request,
+            self.template_name,
+            self._ctx(
+                request,
+                alignement,
+                form,
+                onglet,
+                details,
+                add_detail_form=RuDetailAlignementAddForm(),
+                show_add_detail_form=show_add,
+            ),
+        )
 
     def post(self, request, pk):
         alignement = get_object_or_404(
             RuAlignement.objects.select_related('id_voie', 'id_parcelle'),
             pk=pk,
         )
+
+        if request.POST.get('action') == 'ajouter_detail':
+            add_form = RuDetailAlignementAddForm(request.POST)
+            if add_form.is_valid():
+                max_id = RuDetailAlignement.objects.aggregate(m=Max('id_detail'))['m']
+                RuDetailAlignement.objects.create(
+                    id_detail=(max_id or 0) + 1,
+                    id_alignement=alignement,
+                    id_regle_id=add_form.cleaned_data['id_regle'],
+                    valeur=add_form.cleaned_data.get('valeur', ''),
+                )
+                messages.success(
+                    request,
+                    "L'ajout du détail a bien été pris en compte.",
+                    extra_tags='quick-dismiss',
+                )
+                return redirect(f"{reverse('backoffice:alignement_edit', args=[pk])}?onglet=regles")
+            details = self._details_regles_alignement(request, alignement)
+            return render(
+                request,
+                self.template_name,
+                self._ctx(
+                    request,
+                    alignement,
+                    AlignementForm(instance=alignement),
+                    'regles',
+                    details,
+                    add_detail_form=add_form,
+                    show_add_detail_form=True,
+                ),
+            )
+
+        if request.POST.get('action') == 'supprimer_detail':
+            detail_pk = request.POST.get('detail_pk')
+            detail = get_object_or_404(
+                RuDetailAlignement.objects.select_related('id_regle'),
+                pk=detail_pk,
+                id_alignement=alignement.pk,
+                id_regle__type_regle='ALIGNEMENT',
+            )
+            detail.delete()
+            messages.error(
+                request,
+                f'La suppression du détail {detail_pk} a bien été prise en compte.',
+            )
+            return redirect(f"{reverse('backoffice:alignement_edit', args=[pk])}?onglet=regles")
+
         onglet = self._get_onglet(request)
         form   = AlignementForm(request.POST, instance=alignement)
         if form.is_valid():
@@ -169,8 +297,12 @@ class AlignementEditView(View):
             return redirect(
                 f"{reverse('backoffice:alignement_edit', args=[pk])}?onglet={onglet}"
             )
-        return render(request, self.template_name,
-                      self._ctx(request, alignement, form, onglet))
+        details = self._details_regles_alignement(request, alignement)
+        return render(
+            request,
+            self.template_name,
+            self._ctx(request, alignement, form, onglet, details),
+        )
 
 
 class AlignementSupprimerView(View):

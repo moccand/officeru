@@ -21,13 +21,12 @@ from .base import (
 from .consultation import (
     ConsultationCarteView,
     ConsultationParcellesView,
-    ConsultationTronconsView,
 )
 
 from .gestion_misc import (
     GestionMutationsView,
+    GestionAvanceeView,
     GestionAnalyseReferentielsView,
-    GestionDetailsView,
 )
 
 from .gestion_parcelles import (
@@ -41,6 +40,7 @@ from .gestion_parcelles import (
 
 from .gestion_alignements import (
     _alignement_parcelle_autocomplete_prefill,
+    ReglesAlignementAutocompleteView,
     GestionAlignementsView,
     AlignementAjouterView,
     AlignementEditView,
@@ -89,14 +89,15 @@ __all__ = [
     '_alignement_breadcrumbs', '_regle_breadcrumbs', '_parcelle_breadcrumbs',
     '_admin_context',
     # consultation
-    'ConsultationCarteView', 'ConsultationParcellesView', 'ConsultationTronconsView',
+    'ConsultationCarteView', 'ConsultationParcellesView',
     # gestion misc
-    'GestionMutationsView', 'GestionAnalyseReferentielsView', 'GestionDetailsView',
+    'GestionMutationsView', 'GestionAvanceeView', 'GestionAnalyseReferentielsView',
     # gestion parcelles
     'ParcellesAutocompleteView', 'ReglesParcelleAutocompleteView', 'GestionParcellesView',
     'ParcelleAjouterView', 'ParcelleEditView', 'ParcelleSupprimerView',
     # gestion alignements
     '_alignement_parcelle_autocomplete_prefill',
+    'ReglesAlignementAutocompleteView',
     'GestionAlignementsView', 'AlignementAjouterView',
     'AlignementEditView', 'AlignementSupprimerView',
     # gestion règles

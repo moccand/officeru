@@ -92,7 +92,8 @@
             {% include "backoffice/partials/sortable_th.html" with col="code_voie_rivoli" label="Code Rivoli" %}
             {% include "backoffice/partials/sortable_th.html" with col="voie_privee"      label="Voie privée" %}
             {% include "backoffice/partials/sortable_th.html" with col="nb_alignements" label="Alignements" %}
-            {% include "backoffice/partials/sortable_th.html" with col="date"             label="Date" %}
+            {% include "backoffice/partials/sortable_th.html" with col="date_creation" label="Création" %}
+            {% include "backoffice/partials/sortable_th.html" with col="date_modification" label="Modification" %}
             <th class="font-semibold text-center w-28">Actions</th>
           </tr>
         </thead>
@@ -121,7 +122,10 @@
                 {% endif %}
               </td>
               <td class="text-base-content/60 text-xs whitespace-nowrap">
-                {{ v.date|date:"d/m/Y"|default:"—" }}
+                {% if v.date_creation %}{{ v.date_creation|date:"d/m/Y" }}{% else %}—{% endif %}
+              </td>
+              <td class="text-base-content/60 text-xs whitespace-nowrap">
+                {% if v.date_modification %}{{ v.date_modification|date:"d/m/Y" }}{% else %}—{% endif %}
               </td>
               <td>
                 <div class="flex items-center justify-center gap-0.5">
@@ -150,7 +154,7 @@
             </tr>
           {% empty %}
             <tr>
-              <td colspan="7" class="text-center py-12 text-base-content/30 text-sm">
+              <td colspan="8" class="text-center py-12 text-base-content/30 text-sm">
                 Aucune voie ne correspond aux critères
               </td>
             </tr>

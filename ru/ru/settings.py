@@ -2,6 +2,7 @@
 Django settings for ru project.
 """
 import environ
+import os
 from pathlib import Path
 
 # ── Répertoires ───────────────────────────────────────────────
@@ -21,9 +22,9 @@ environ.Env.read_env(BASE_DIR.parent / '.env')
 # ── Sécurité ──────────────────────────────────────────────────
 SECRET_KEY = env('DJANGO_SECRET_KEY')
 DEBUG       = env('DJANGO_DEBUG')
-
 ALLOWED_HOSTS           = env('DJANGO_ALLOWED_HOSTS')
 CSRF_TRUSTED_ORIGINS    = env('DJANGO_CSRF_TRUSTED_ORIGINS')
+
 
 # ── Applications ──────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -68,7 +69,10 @@ WSGI_APPLICATION = 'ru.wsgi.application'
 
 # ── Base de données ───────────────────────────────────────────
 DATABASES = {
-    'default': env.db('DATABASE_URL'),
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 # ── Validation des mots de passe ──────────────────────────────
@@ -93,7 +97,6 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 LOGIN_URL = 'backoffice:login'
 
 # ── Logging ───────────────────────────────────────────────────
-import os
 
 LOG_DIR = Path(env('DJANGO_LOG_DIR'))
 LOG_DIR.mkdir(parents=True, exist_ok=True)

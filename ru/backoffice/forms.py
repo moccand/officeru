@@ -66,7 +66,6 @@ class RuVoieForm(RuModelFormMixin, forms.ModelForm):
             'code_voie_ville',
             'code_voie_rivoli',
             'voie_privee',
-            'date',
         ]
 
     def save(self, commit=True):
@@ -109,7 +108,7 @@ class AlignementForm(RuModelFormMixin, forms.ModelForm):
             'suffixe_un_debut', 'suffixe_2_debut', 'suffixe_3_debut',
             'numero_fin', 'adresse_fin',
             'suffixe_un_fin', 'suffixe_2_fin', 'suffixe_3_fin',
-            'parite', 'commune', 'date',
+            'parite', 'commune',
         ]
 
     def __init__(self, *args, **kwargs):
@@ -140,7 +139,7 @@ class RuRegleForm(RuModelFormMixin, forms.ModelForm):
         fields = [
             'code', 'type_regle', 'libelle', 'doc_urba', 'autorite', 'url_doc',
             'standard_cnig', 'type_cnig', 'code_cnig', 'sous_code_cnig',
-            'cible', 'date', 'phrase_chatbot', 'type_cartads',
+            'cible', 'phrase_chatbot', 'type_cartads',
         ]
         widgets = {
             'libelle': forms.Textarea(attrs={
@@ -149,18 +148,13 @@ class RuRegleForm(RuModelFormMixin, forms.ModelForm):
             'phrase_chatbot': forms.Textarea(attrs={
                 'rows': 4, 'class': 'textarea textarea-bordered w-full text-sm',
             }),
-            'date': forms.DateInput(
-                format='%Y-%m-%d',
-                attrs={'type': 'date', 'class': 'input input-bordered w-full text-sm'},
-            ),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['date'].input_formats = ['%Y-%m-%d']
         # Appliquer les classes DaisyUI aux champs texte simples
         for name, field in self.fields.items():
-            if name in ('libelle', 'phrase_chatbot', 'date'):
+            if name in ('libelle', 'phrase_chatbot'):
                 continue
             if isinstance(field.widget, forms.TextInput):
                 field.widget.attrs.setdefault('class', 'input input-bordered w-full text-sm')
@@ -183,29 +177,21 @@ class RuParcelleForm(RuModelFormMixin, forms.ModelForm):
     Champs requis (blank=False, null=False) : identifiant, dep, insee_com,
     section, numero.
     Champs optionnels : insee_com_absorbee (blank=True, default='000'),
-    m2_dgfip (blank=True, default=0), enclave (null=True), date (null=True).
+    m2_dgfip (blank=True, default=0), enclave (null=True).
+    Les dates création / modification sont gérées par le modèle.
     """
     class Meta:
         model = RuParcelle
         fields = [
             'identifiant', 'dep', 'insee_com', 'insee_com_absorbee',
-            'section', 'numero', 'm2_dgfip', 'enclave', 'statut', 'date',
+            'section', 'numero', 'm2_dgfip', 'enclave', 'statut',
         ]
-        widgets = {
-            'date': forms.DateInput(
-                format='%Y-%m-%d',
-                attrs={'type': 'date', 'class': 'input input-bordered w-full text-sm'},
-            ),
-        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['date'].input_formats = ['%Y-%m-%d']
         # Appliquer les classes DaisyUI selon le type de widget
         num_cls = 'input input-bordered w-full text-sm'
         for name, field in self.fields.items():
-            if name == 'date':
-                continue
             w = field.widget
             if isinstance(w, forms.TextInput):
                 w.attrs.setdefault('class', 'input input-bordered w-full text-sm')
@@ -263,6 +249,40 @@ class RuDetailParcelleAddForm(forms.Form):
     def clean_id_regle(self):
         regle_id = self.cleaned_data.get('id_regle')
         exists = RuRegle.objects.filter(pk=regle_id, type_regle=RuRegle.TypeRegle.PARCELLE).exists()
+        if not exists:
+            raise forms.ValidationError("Veuillez sélectionner une règle via l'autocomplétion.")
+        return regle_id
+
+
+class RuDetailAlignementAddForm(forms.Form):
+    """Ajout de RuDetailAlignement depuis l'onglet « Règles sur l'alignement »."""
+
+    use_required_attribute = False
+
+    id_regle = forms.IntegerField(required=True, widget=forms.HiddenInput())
+    regle_search = forms.CharField(required=False)
+    valeur = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'input input-bordered w-full text-sm',
+            'placeholder': 'Valeur libre…',
+        }),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['regle_search'].widget.attrs.update({
+            'class': 'grow bg-transparent text-sm text-base-content placeholder:text-base-content/30 min-w-0',
+            'style': 'outline:none;box-shadow:none;border:none;',
+            'placeholder': 'Rechercher une règle (code ou libellé)…',
+            'autocomplete': 'off',
+            'aria-autocomplete': 'list',
+            'aria-controls': 'detail-alignement-regle-suggestions',
+        })
+
+    def clean_id_regle(self):
+        regle_id = self.cleaned_data.get('id_regle')
+        exists = RuRegle.objects.filter(pk=regle_id, type_regle=RuRegle.TypeRegle.ALIGNEMENT).exists()
         if not exists:
             raise forms.ValidationError("Veuillez sélectionner une règle via l'autocomplétion.")
         return regle_id

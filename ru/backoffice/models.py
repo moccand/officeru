@@ -8,7 +8,7 @@ class GroupProfile(models.Model):
     Permet d'ajouter des champs sans toucher au modèle Group natif.
     Compatible avec toutes les montées de version Django.
     """
-    group       = models.OneToOneField(
+    group = models.OneToOneField(
         Group,
         on_delete=models.CASCADE,
         related_name='profile',

@@ -61,7 +61,7 @@
           </div>
 
           <div class="p-6 space-y-6">
-            {% include "backoffice/gestion/partials/regle_form_fields.html" %}
+            {% include "backoffice/gestion/partials/regle_form_fields.html" with form=form regle=regle %}
           </div>
 
           <div class="px-6 py-4 border-t border-base-200 flex items-center justify-between gap-3">
@@ -101,7 +101,8 @@
                   <th class="font-semibold">ID parcelle</th>
                   <th class="font-semibold">Identifiant</th>
                   <th class="font-semibold">Valeur</th>
-                  <th class="font-semibold">Date</th>
+                  <th class="font-semibold">Création</th>
+                  <th class="font-semibold">Modification</th>
                 </tr>
               </thead>
               <tbody>
@@ -111,7 +112,8 @@
                     <td class="text-xs font-mono">{{ d.id_parcelle_id }}</td>
                     <td class="text-xs">{{ d.id_parcelle__identifiant|default:"" }}</td>
                     <td class="text-xs max-w-md">{{ d.valeur|default:""|truncatechars:80 }}</td>
-                    <td class="text-xs text-base-content/60 whitespace-nowrap">{{ d.date|date:"d/m/Y"|default:"—" }}</td>
+                    <td class="text-xs text-base-content/60 whitespace-nowrap">{% if d.date_creation %}{{ d.date_creation|date:"d/m/Y" }}{% else %}—{% endif %}</td>
+                    <td class="text-xs text-base-content/60 whitespace-nowrap">{% if d.date_modification %}{{ d.date_modification|date:"d/m/Y" }}{% else %}—{% endif %}</td>
                   </tr>
                 {% endfor %}
               </tbody>

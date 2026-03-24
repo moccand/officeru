@@ -19,6 +19,12 @@
 
     <form method="get" action="{% url 'backoffice:gestion_regles' %}" class="p-5 border-b border-base-200">
       <div class="flex flex-wrap gap-3 items-center">
+        {% if request.GET.sort %}
+          <input type="hidden" name="sort" value="{{ request.GET.sort }}" />
+        {% endif %}
+        {% if request.GET.dir %}
+          <input type="hidden" name="dir" value="{{ request.GET.dir }}" />
+        {% endif %}
 
         <label class="input input-bordered input-sm flex items-center gap-2 flex-1 min-w-52">
           <span class="sr-only">Recherche dans les règles</span>
@@ -76,14 +82,13 @@
         <thead>
           <tr class="text-xs text-base-content/40 uppercase tracking-wide bg-base-200/50 border-b border-base-200">
             {% include "backoffice/partials/sortable_th.html" with col="code" label="Code" %}
-            {% include "backoffice/partials/sortable_th.html" with col="type_regle" label="Type règle" %}
             {% include "backoffice/partials/sortable_th.html" with col="libelle" label="Libellé" %}
             {% include "backoffice/partials/sortable_th.html" with col="doc_urba" label="Doc. urba" %}
             {% include "backoffice/partials/sortable_th.html" with col="autorite" label="Autorité" %}
-            {% include "backoffice/partials/sortable_th.html" with col="standard_cnig" label="Standard CNIG" %}
-            {% include "backoffice/partials/sortable_th.html" with col="type_cnig" label="Type CNIG" %}
-            {% include "backoffice/partials/sortable_th.html" with col="code_cnig" label="Code CNIG" %}
-            {% include "backoffice/partials/sortable_th.html" with col="sous_code_cnig" label="Sous-code CNIG" %}
+            {% include "backoffice/partials/sortable_th.html" with col="date_creation" label="Création" %}
+            {% include "backoffice/partials/sortable_th.html" with col="date_modification" label="Modification" %}
+            {% include "backoffice/partials/sortable_th.html" with col="type_regle" label="Type de règle" %}
+            {% include "backoffice/partials/sortable_th.html" with col="nb_details_lies" label="Détails liés" %}
             <th class="font-semibold w-24 text-center">Actions</th>
           </tr>
         </thead>
@@ -91,16 +96,21 @@
           {% for r in regles %}
             <tr class="data-row border-b border-base-100 last:border-0">
               <td class="font-mono text-xs text-primary font-medium">{{ r.code }}</td>
-              <td class="text-xs">
-                <span class="badge badge-ghost badge-sm">{{ r.get_type_regle_display }}</span>
-              </td>
               <td class="text-xs max-w-[14rem]">{{ r.libelle|default:""|truncatechars:48 }}</td>
               <td class="text-base-content/70 text-xs">{{ r.doc_urba|default:"" }}</td>
               <td class="text-base-content/70 text-xs">{{ r.autorite|default:"" }}</td>
-              <td class="text-base-content/60 text-xs">{{ r.standard_cnig|default:"" }}</td>
-              <td class="text-base-content/60 text-xs">{{ r.type_cnig|default:"" }}</td>
-              <td class="text-base-content/60 text-xs font-mono">{{ r.code_cnig|default:"" }}</td>
-              <td class="text-base-content/60 text-xs font-mono">{{ r.sous_code_cnig|default:"" }}</td>
+              <td class="text-base-content/60 text-xs whitespace-nowrap">
+                {% if r.date_creation %}{{ r.date_creation|date:"d/m/Y" }}{% else %}—{% endif %}
+              </td>
+              <td class="text-base-content/60 text-xs whitespace-nowrap">
+                {% if r.date_modification %}{{ r.date_modification|date:"d/m/Y" }}{% else %}—{% endif %}
+              </td>
+              <td class="text-xs">
+                <span class="badge badge-ghost badge-sm">{{ r.get_type_regle_display }}</span>
+              </td>
+              <td class="text-xs text-center tabular-nums text-base-content/70 whitespace-nowrap font-mono">
+                {{ r.nb_details_lies }}
+              </td>
               <td>
                 <div class="flex items-center justify-center gap-0.5">
                   <a href="{% url 'backoffice:regle_edit' r.pk %}"
@@ -112,8 +122,12 @@
                     </svg>
                   </a>
                   <button type="button"
-                    onclick="confirmerSuppressionRegle('{% url 'backoffice:regle_supprimer' r.pk %}', 'Supprimer la règle « {{ r.code|escapejs }} » ?')"
-                    class="btn btn-ghost btn-xs btn-square tooltip tooltip-left inline-flex items-center justify-center"
+                    class="btn-supprimer-regle btn btn-ghost btn-xs btn-square tooltip tooltip-left inline-flex items-center justify-center"
+                    data-delete-url="{% url 'backoffice:regle_supprimer' r.pk %}"
+                    data-code="{{ r.code }}"
+                    data-nb-detail="{{ r.nb_ru_detail }}"
+                    data-nb-alignement="{{ r.nb_ru_detail_alignement }}"
+                    onclick="confirmerSuppressionRegle(this)"
                     data-tip="Supprimer"
                     aria-label="Supprimer la règle {{ r.code }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40 hover:text-error transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -125,7 +139,7 @@
             </tr>
           {% empty %}
             <tr>
-              <td colspan="10" class="text-center py-12 text-base-content/30 text-sm">
+              <td colspan="9" class="text-center py-12 text-base-content/30 text-sm">
                 Aucune règle ne correspond aux critères
               </td>
             </tr>
@@ -144,6 +158,8 @@
       <p class="py-4 text-sm text-base-content/70" id="modal-message-regle">
         Voulez-vous supprimer cette règle ? Cette action est irréversible.
       </p>
+      <p class="text-sm font-medium min-h-[2.75rem] rounded-lg px-3 py-2 border border-base-200 bg-base-200/30"
+         id="modal-usage-regle" role="status" aria-live="polite"></p>
       <div class="modal-action">
         <form method="dialog">
           <button type="submit" class="btn btn-ghost btn-sm">Annuler</button>
@@ -161,9 +177,34 @@
 
 {% block extra_js %}
 <script>
-function confirmerSuppressionRegle(url, message) {
-  document.getElementById('modal-message-regle').textContent = message;
+function confirmerSuppressionRegle(btn) {
+  const url = btn.dataset.deleteUrl;
+  const code = btn.dataset.code || '';
+  const nbP = parseInt(btn.dataset.nbDetail, 10) || 0;
+  const nbA = parseInt(btn.dataset.nbAlignement, 10) || 0;
+  document.getElementById('modal-message-regle').textContent =
+    'Supprimer la règle « ' + code + ' » ? Cette action est irréversible.';
   document.getElementById('form-suppression-regle').action = url;
+  const usageEl = document.getElementById('modal-usage-regle');
+  usageEl.className =
+    'text-sm font-medium min-h-[2.75rem] rounded-lg px-3 py-2 border ';
+  if (nbP === 0 && nbA === 0) {
+    usageEl.classList.add('text-success', 'border-success/30', 'bg-success/10');
+    usageEl.textContent =
+      'Cette règle n\'est pas utilisée : aucun détail parcelle ni alignement ne lui est associé.';
+  } else {
+    usageEl.classList.add('text-error', 'border-error/30', 'bg-error/10');
+    const parts = [];
+    if (nbP > 0) {
+      parts.push(nbP + ' détail' + (nbP > 1 ? 's' : '') + ' parcelle');
+    }
+    if (nbA > 0) {
+      parts.push(nbA + ' détail' + (nbA > 1 ? 's' : '') + ' alignement');
+    }
+    usageEl.textContent =
+      'Attention : cette règle est liée à ' + parts.join(' et ') +
+      '. La suppression de la règle supprimera définitivement ces enregistrements (les parcelles et alignements ne sont pas supprimés).';
+  }
   document.getElementById('modal-suppression-regle').showModal();
 }
 </script>

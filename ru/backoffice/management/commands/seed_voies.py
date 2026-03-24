@@ -25,7 +25,8 @@ VOIES_FIXES = [
         'code_voie_rivoli':'6780',
         'code_voie_ville': '7501',
         'voie_privee':     0,
-        'date':            date(2020, 1, 15),
+        'date_creation':    date(2020, 1, 15),
+        'date_modification': date(2020, 1, 15),
     },
     {
         'id_voie':         1002,
@@ -34,7 +35,8 @@ VOIES_FIXES = [
         'code_voie_rivoli':'1570',
         'code_voie_ville': '7508',
         'voie_privee':     0,
-        'date':            date(2019, 6, 3),
+        'date_creation':    date(2019, 6, 3),
+        'date_modification': date(2019, 6, 3),
     },
     {
         'id_voie':         1003,
@@ -43,7 +45,8 @@ VOIES_FIXES = [
         'code_voie_rivoli':'4370',
         'code_voie_ville': '7509',
         'voie_privee':     0,
-        'date':            date(2021, 3, 22),
+        'date_creation':    date(2021, 3, 22),
+        'date_modification': date(2021, 3, 22),
     },
     {
         'id_voie':         1004,
@@ -52,7 +55,8 @@ VOIES_FIXES = [
         'code_voie_rivoli':'3515',
         'code_voie_ville': '7511',
         'voie_privee':     0,
-        'date':            date(2018, 11, 7),
+        'date_creation':    date(2018, 11, 7),
+        'date_modification': date(2018, 11, 7),
     },
     {
         'id_voie':         1005,
@@ -61,7 +65,8 @@ VOIES_FIXES = [
         'code_voie_rivoli':'0012',
         'code_voie_ville': '7516',
         'voie_privee':     1,
-        'date':            date(2022, 4, 10),
+        'date_creation':    date(2022, 4, 10),
+        'date_modification': date(2022, 4, 10),
     },
     {
         'id_voie':         1006,
@@ -70,7 +75,8 @@ VOIES_FIXES = [
         'code_voie_rivoli':'0670',
         'code_voie_ville': '7512',
         'voie_privee':     0,
-        'date':            date(2020, 8, 19),
+        'date_creation':    date(2020, 8, 19),
+        'date_modification': date(2020, 8, 19),
     },
     {
         'id_voie':         1007,
@@ -79,7 +85,8 @@ VOIES_FIXES = [
         'code_voie_rivoli':'5290',
         'code_voie_ville': '7518',
         'voie_privee':     0,
-        'date':            date(2023, 1, 5),
+        'date_creation':    date(2023, 1, 5),
+        'date_modification': date(2023, 1, 5),
     },
     {
         'id_voie':         1008,
@@ -88,7 +95,8 @@ VOIES_FIXES = [
         'code_voie_rivoli':'9934',
         'code_voie_ville': '7514',
         'voie_privee':     1,
-        'date':            date(2017, 9, 28),
+        'date_creation':    date(2017, 9, 28),
+        'date_modification': date(2017, 9, 28),
     },
     {
         'id_voie':         1009,
@@ -97,7 +105,8 @@ VOIES_FIXES = [
         'code_voie_rivoli':'7812',
         'code_voie_ville': '7505',
         'voie_privee':     0,
-        'date':            date(2021, 12, 1),
+        'date_creation':    date(2021, 12, 1),
+        'date_modification': date(2021, 12, 1),
     },
     {
         'id_voie':         1010,
@@ -106,7 +115,8 @@ VOIES_FIXES = [
         'code_voie_rivoli':'0234',
         'code_voie_ville': '7515',
         'voie_privee':     0,
-        'date':            date(2019, 2, 14),
+        'date_creation':    date(2019, 2, 14),
+        'date_modification': date(2019, 2, 14),
     },
 ]
 
@@ -135,6 +145,7 @@ def generer_voie_aleatoire(id_voie: int) -> dict:
     code_rivoli = str(random.randint(100, 9999)).zfill(4)
     debut  = date(2015, 1, 1)
     jours  = random.randint(0, (date.today() - debut).days)
+    d      = debut + timedelta(days=jours)
 
     return {
         'id_voie':         id_voie,
@@ -143,7 +154,8 @@ def generer_voie_aleatoire(id_voie: int) -> dict:
         'code_voie_rivoli': code_rivoli,
         'code_voie_ville':  arr,
         'voie_privee':      random.choice([0, 0, 0, 1]),  # 25% privées
-        'date':             debut + timedelta(days=jours),
+        'date_creation':    d,
+        'date_modification': d,
     }
 
 
