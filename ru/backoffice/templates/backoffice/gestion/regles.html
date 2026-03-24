@@ -1,0 +1,159 @@
+{% extends "backoffice/layouts/base.html" %}
+
+{% block page_title %}Règles — Gestion{% endblock %}
+
+{% block page_header %}
+  <div class="fade-in delay-1 mb-6 flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-base-content">Règles</h1>
+      <p class="text-sm text-base-content/40 mt-0.5">Gestion des règles d'urbanisme et métadonnées associées</p>
+    </div>
+  </div>
+{% endblock %}
+
+{% block content %}
+
+  {% include "backoffice/partials/messages.html" %}
+
+  <div class="fade-in delay-2 card bg-base-100 border border-base-200 shadow-sm">
+
+    <form method="get" action="{% url 'backoffice:gestion_regles' %}" class="p-5 border-b border-base-200">
+      <div class="flex flex-wrap gap-3 items-center">
+
+        <label class="input input-bordered input-sm flex items-center gap-2 flex-1 min-w-52">
+          <span class="sr-only">Recherche dans les règles</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+          </svg>
+          <input name="q" type="text" value="{{ request.GET.q }}"
+            class="grow bg-transparent outline-none text-sm"
+            placeholder="Recherche (code, libellé, phrase chatbot…)"
+            aria-label="Rechercher une règle" />
+        </label>
+
+        <a href="{% url 'backoffice:gestion_regles' %}"
+          class="btn btn-ghost btn-sm gap-1.5 text-base-content/40 hover:text-base-content">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+          Réinitialiser
+        </a>
+
+        <span class="text-xs text-base-content/40">
+          {{ page_obj.paginator.count }} règle{{ page_obj.paginator.count|pluralize }}
+        </span>
+
+        <div class="flex items-center gap-2 ml-auto">
+          <label for="per_page_r" class="text-xs text-base-content/40 whitespace-nowrap">Lignes par page</label>
+          <select id="per_page_r" name="per_page" class="select select-bordered select-sm w-20 text-sm">
+            <option value="25"  {% if request.GET.per_page == "25" or not request.GET.per_page %}selected{% endif %}>25</option>
+            <option value="50"  {% if request.GET.per_page == "50"  %}selected{% endif %}>50</option>
+            <option value="100" {% if request.GET.per_page == "100" %}selected{% endif %}>100</option>
+          </select>
+          <button type="submit" class="btn btn-ghost btn-xs">Appliquer</button>
+        </div>
+
+        <a href="{% url 'backoffice:regle_ajouter' %}" class="btn btn-primary btn-sm gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Ajouter une règle
+        </a>
+      </div>
+    </form>
+
+    {% include "backoffice/partials/pagination.html" with page_obj=page_obj %}
+
+    <div class="overflow-x-auto">
+      <table class="table table-sm w-full text-sm">
+        <thead>
+          <tr class="text-xs text-base-content/40 uppercase tracking-wide bg-base-200/50 border-b border-base-200">
+            {% include "backoffice/partials/sortable_th.html" with col="code" label="Code" %}
+            {% include "backoffice/partials/sortable_th.html" with col="libelle" label="Libellé" %}
+            {% include "backoffice/partials/sortable_th.html" with col="doc_urba" label="Doc. urba" %}
+            {% include "backoffice/partials/sortable_th.html" with col="autorite" label="Autorité" %}
+            {% include "backoffice/partials/sortable_th.html" with col="standard_cnig" label="Standard CNIG" %}
+            {% include "backoffice/partials/sortable_th.html" with col="type_cnig" label="Type CNIG" %}
+            {% include "backoffice/partials/sortable_th.html" with col="code_cnig" label="Code CNIG" %}
+            {% include "backoffice/partials/sortable_th.html" with col="sous_code_cnig" label="Sous-code CNIG" %}
+            <th class="font-semibold w-24 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in regles %}
+            <tr class="data-row border-b border-base-100 last:border-0">
+              <td class="font-mono text-xs text-primary font-medium">{{ r.code }}</td>
+              <td class="text-xs max-w-[14rem]">{{ r.libelle|default:""|truncatechars:48 }}</td>
+              <td class="text-base-content/70 text-xs">{{ r.doc_urba|default:"" }}</td>
+              <td class="text-base-content/70 text-xs">{{ r.autorite|default:"" }}</td>
+              <td class="text-base-content/60 text-xs">{{ r.standard_cnig|default:"" }}</td>
+              <td class="text-base-content/60 text-xs">{{ r.type_cnig|default:"" }}</td>
+              <td class="text-base-content/60 text-xs font-mono">{{ r.code_cnig|default:"" }}</td>
+              <td class="text-base-content/60 text-xs font-mono">{{ r.sous_code_cnig|default:"" }}</td>
+              <td>
+                <div class="flex items-center justify-center gap-0.5">
+                  <a href="{% url 'backoffice:regle_edit' r.pk %}"
+                    class="btn btn-ghost btn-xs btn-square tooltip tooltip-left inline-flex items-center justify-center"
+                    data-tip="Éditer"
+                    aria-label="Éditer la règle {{ r.code }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40 hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                  </a>
+                  <button type="button"
+                    onclick="confirmerSuppressionRegle('{% url 'backoffice:regle_supprimer' r.pk %}', 'Supprimer la règle « {{ r.code|escapejs }} » ?')"
+                    class="btn btn-ghost btn-xs btn-square tooltip tooltip-left inline-flex items-center justify-center"
+                    data-tip="Supprimer"
+                    aria-label="Supprimer la règle {{ r.code }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40 hover:text-error transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="9" class="text-center py-12 text-base-content/30 text-sm">
+                Aucune règle ne correspond aux critères
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% include "backoffice/partials/pagination.html" with page_obj=page_obj %}
+
+  </div>
+
+  <dialog id="modal-suppression-regle" class="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-base">Confirmer la suppression</h3>
+      <p class="py-4 text-sm text-base-content/70" id="modal-message-regle">
+        Voulez-vous supprimer cette règle ? Cette action est irréversible.
+      </p>
+      <div class="modal-action">
+        <form method="dialog">
+          <button type="submit" class="btn btn-ghost btn-sm">Annuler</button>
+        </form>
+        <form id="form-suppression-regle" method="post" action="">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-error btn-sm">Supprimer</button>
+        </form>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button type="submit">Fermer</button></form>
+  </dialog>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmerSuppressionRegle(url, message) {
+  document.getElementById('modal-message-regle').textContent = message;
+  document.getElementById('form-suppression-regle').action = url;
+  document.getElementById('modal-suppression-regle').showModal();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,78 @@
+{# Champs RuParcelleForm — contexte : form #}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+  <div class="ru-form-field md:col-span-2">
+    <label for="{{ form.identifiant.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Identifiant" required=form.identifiant.field.required only %}
+    </label>
+    {{ form.identifiant }}
+    {% if form.identifiant.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.identifiant.errors|join:", " }}</p>{% endif %}
+  </div>
+
+  <div class="ru-form-field">
+    <label for="{{ form.dep.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Département" required=form.dep.field.required only %}
+    </label>
+    {{ form.dep }}
+    {% if form.dep.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.dep.errors|join:", " }}</p>{% endif %}
+  </div>
+  <div class="ru-form-field">
+    <label for="{{ form.insee_com.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="INSEE commune" required=form.insee_com.field.required only %}
+    </label>
+    {{ form.insee_com }}
+    {% if form.insee_com.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.insee_com.errors|join:", " }}</p>{% endif %}
+  </div>
+
+  <div class="ru-form-field md:col-span-2">
+    <label for="{{ form.insee_com_absorbee.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="INSEE commune absorbée" required=form.insee_com_absorbee.field.required only %}
+    </label>
+    {{ form.insee_com_absorbee }}
+    {% if form.insee_com_absorbee.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.insee_com_absorbee.errors|join:", " }}</p>{% endif %}
+  </div>
+
+  <div class="ru-form-field">
+    <label for="{{ form.section.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Section" required=form.section.field.required only %}
+    </label>
+    {{ form.section }}
+    {% if form.section.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.section.errors|join:", " }}</p>{% endif %}
+  </div>
+  <div class="ru-form-field">
+    <label for="{{ form.numero.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Numéro" required=form.numero.field.required only %}
+    </label>
+    {{ form.numero }}
+    {% if form.numero.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.numero.errors|join:", " }}</p>{% endif %}
+  </div>
+
+  <div class="ru-form-field">
+    <label for="{{ form.m2_dgfip.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Surface DGFiP (m²)" required=form.m2_dgfip.field.required only %}
+    </label>
+    {{ form.m2_dgfip }}
+    {% if form.m2_dgfip.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.m2_dgfip.errors|join:", " }}</p>{% endif %}
+  </div>
+  <div class="ru-form-field">
+    <label for="{{ form.enclave.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Enclave" required=form.enclave.field.required only %}
+    </label>
+    {{ form.enclave }}
+    {% if form.enclave.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.enclave.errors|join:", " }}</p>{% endif %}
+  </div>
+
+  <div class="ru-form-field">
+    <label for="{{ form.statut.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Statut" required=form.statut.field.required only %}
+    </label>
+    {{ form.statut }}
+    {% if form.statut.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.statut.errors|join:", " }}</p>{% endif %}
+  </div>
+  <div class="ru-form-field">
+    <label for="{{ form.date.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Date" required=form.date.field.required only %}
+    </label>
+    {{ form.date }}
+    {% if form.date.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.date.errors|join:", " }}</p>{% endif %}
+  </div>
+</div>

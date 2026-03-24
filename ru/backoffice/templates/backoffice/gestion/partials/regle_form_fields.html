@@ -1,0 +1,101 @@
+{# Champs RuRegleForm — contexte : form #}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+  <div class="ru-form-field md:col-span-2">
+    <label for="{{ form.code.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Code" required=form.code.field.required only %}
+    </label>
+    {{ form.code }}
+    {% if form.code.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.code.errors|join:", " }}</p>{% endif %}
+  </div>
+
+  <div class="ru-form-field md:col-span-2">
+    <label for="{{ form.libelle.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Libellé" required=form.libelle.field.required only %}
+    </label>
+    {{ form.libelle }}
+    {% if form.libelle.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.libelle.errors|join:", " }}</p>{% endif %}
+  </div>
+
+  <div class="ru-form-field">
+    <label for="{{ form.doc_urba.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Doc. urbanisme" required=form.doc_urba.field.required only %}
+    </label>
+    {{ form.doc_urba }}
+    {% if form.doc_urba.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.doc_urba.errors|join:", " }}</p>{% endif %}
+  </div>
+  <div class="ru-form-field">
+    <label for="{{ form.autorite.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Autorité" required=form.autorite.field.required only %}
+    </label>
+    {{ form.autorite }}
+    {% if form.autorite.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.autorite.errors|join:", " }}</p>{% endif %}
+  </div>
+
+  <div class="ru-form-field md:col-span-2">
+    <label for="{{ form.url_doc.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="URL documentation" required=form.url_doc.field.required only %}
+    </label>
+    {{ form.url_doc }}
+    {% if form.url_doc.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.url_doc.errors|join:", " }}</p>{% endif %}
+  </div>
+
+  <div class="ru-form-field">
+    <label for="{{ form.standard_cnig.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Standard CNIG" required=form.standard_cnig.field.required only %}
+    </label>
+    {{ form.standard_cnig }}
+    {% if form.standard_cnig.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.standard_cnig.errors|join:", " }}</p>{% endif %}
+  </div>
+  <div class="ru-form-field">
+    <label for="{{ form.type_cnig.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Type CNIG" required=form.type_cnig.field.required only %}
+    </label>
+    {{ form.type_cnig }}
+    {% if form.type_cnig.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.type_cnig.errors|join:", " }}</p>{% endif %}
+  </div>
+  <div class="ru-form-field">
+    <label for="{{ form.code_cnig.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Code CNIG" required=form.code_cnig.field.required only %}
+    </label>
+    {{ form.code_cnig }}
+    {% if form.code_cnig.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.code_cnig.errors|join:", " }}</p>{% endif %}
+  </div>
+  <div class="ru-form-field">
+    <label for="{{ form.sous_code_cnig.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Sous-code CNIG" required=form.sous_code_cnig.field.required only %}
+    </label>
+    {{ form.sous_code_cnig }}
+    {% if form.sous_code_cnig.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.sous_code_cnig.errors|join:", " }}</p>{% endif %}
+  </div>
+
+  <div class="ru-form-field">
+    <label for="{{ form.cible.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Cible" required=form.cible.field.required only %}
+    </label>
+    {{ form.cible }}
+    {% if form.cible.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.cible.errors|join:", " }}</p>{% endif %}
+  </div>
+  <div class="ru-form-field">
+    <label for="{{ form.date.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Date" required=form.date.field.required only %}
+    </label>
+    {{ form.date }}
+    {% if form.date.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.date.errors|join:", " }}</p>{% endif %}
+  </div>
+
+  <div class="ru-form-field md:col-span-2">
+    <label for="{{ form.phrase_chatbot.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Phrase chatbot" required=form.phrase_chatbot.field.required only %}
+    </label>
+    {{ form.phrase_chatbot }}
+    {% if form.phrase_chatbot.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.phrase_chatbot.errors|join:", " }}</p>{% endif %}
+  </div>
+
+  <div class="ru-form-field">
+    <label for="{{ form.type_cartads.id_for_label }}" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+      {% include "backoffice/partials/ru_label_required.html" with label_text="Type CartADS" required=form.type_cartads.field.required only %}
+    </label>
+    {{ form.type_cartads }}
+    {% if form.type_cartads.errors %}<p class="text-xs text-error mt-1 ru-inline-error">{{ form.type_cartads.errors|join:", " }}</p>{% endif %}
+  </div>
+</div>

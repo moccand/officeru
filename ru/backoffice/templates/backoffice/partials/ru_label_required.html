@@ -1,0 +1,3 @@
+{# Texte de label + astérisque rouge si le champ Django est obligatoire (dérivé du modèle / du Form). #}
+{# Usage : {% include "..." with label_text="..." required=form.mon_champ.field.required %} #}
+{{ label_text }}{% if required %} <span class="text-error" aria-hidden="true">*</span>{% endif %}

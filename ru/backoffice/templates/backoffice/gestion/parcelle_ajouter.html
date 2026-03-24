@@ -1,0 +1,61 @@
+{% extends "backoffice/layouts/base.html" %}
+
+{% block page_title %}Nouvelle parcelle — Gestion{% endblock %}
+
+{% block page_header %}
+  <div class="fade-in delay-1 mb-6 flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-base-content">Nouvelle parcelle</h1>
+      <p class="text-sm text-base-content/40 mt-0.5">Création d'une parcelle cadastrale</p>
+    </div>
+    <a href="{% url 'backoffice:gestion_parcelles' %}" class="btn btn-ghost btn-sm gap-2 shrink-0">
+      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+      Retour à la liste
+    </a>
+  </div>
+{% endblock %}
+
+{% block content %}
+
+  <form method="post" action="{% url 'backoffice:parcelle_ajouter' %}" novalidate class="fade-in delay-1 max-w-4xl">
+    {% csrf_token %}
+
+    {% if form.errors %}
+      <div class="alert alert-error alert-soft mb-5 ru-form-summary-error">
+        <svg xmlns="http://www.w3.org/2000/svg" class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        </svg>
+        <span>Veuillez corriger les erreurs ci-dessous.</span>
+      </div>
+    {% endif %}
+
+    <div class="card bg-base-100 border border-base-200 shadow-sm">
+      <div class="px-6 py-4 border-b border-base-200">
+        <p class="text-sm font-semibold text-base-content">Parcelle</p>
+        <p class="text-xs text-base-content/40 mt-0.5">Nouvelle entrée — après création, l’onglet « Règles sur la parcelle » sera disponible à l’édition.</p>
+      </div>
+
+      <div class="p-6 space-y-6">
+        {% include "backoffice/gestion/partials/parcelle_form_fields.html" %}
+      </div>
+
+      <div class="px-6 py-4 border-t border-base-200 flex items-center justify-between gap-3">
+        <a href="{% url 'backoffice:gestion_parcelles' %}" class="btn btn-ghost btn-sm gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Retour à la liste
+        </a>
+        <button type="submit" class="btn btn-primary btn-sm gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Créer la parcelle
+        </button>
+      </div>
+    </div>
+  </form>
+
+{% endblock %}

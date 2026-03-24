@@ -1,0 +1,133 @@
+{% extends "backoffice/layouts/base.html" %}
+
+{% block page_title %}Parcelle {{ parcelle.identifiant }} — Gestion{% endblock %}
+
+{% block page_header %}
+  <div class="fade-in delay-1 mb-6 flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-base-content">
+        Parcelle : <span class="font-mono text-primary">{{ parcelle.identifiant|default:parcelle.pk }}</span>
+      </h1>
+      <p class="text-sm text-base-content/40 mt-0.5">
+        Modification de la parcelle et consultation des règles associées (détails).
+      </p>
+    </div>
+    <a href="{% url 'backoffice:gestion_parcelles' %}" class="btn btn-ghost btn-sm gap-2 shrink-0">
+      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+      Retour à la liste
+    </a>
+  </div>
+{% endblock %}
+
+{% block content %}
+
+  <div role="tablist" class="tabs tabs-border mb-4 fade-in delay-1">
+    <a href="?onglet=parcelle" role="tab" class="tab {% if onglet_actif == 'parcelle' %}tab-active{% endif %} gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 9m0 8V9m0 0L9 7"/>
+      </svg>
+      Parcelle
+    </a>
+    <a href="?onglet=regles" role="tab" class="tab {% if onglet_actif == 'regles' %}tab-active{% endif %} gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+      </svg>
+      Règles sur la parcelle
+    </a>
+  </div>
+
+  <div class="fade-in delay-2 max-w-4xl">
+
+    {% if onglet_actif == 'parcelle' %}
+
+      <form method="post" action="{% url 'backoffice:parcelle_edit' parcelle.pk %}?onglet=parcelle" novalidate>
+        {% csrf_token %}
+
+        {% if form.errors %}
+          <div class="alert alert-error alert-soft mb-5 ru-form-summary-error">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+            <span>Veuillez corriger les erreurs ci-dessous.</span>
+          </div>
+        {% endif %}
+
+        <div class="card bg-base-100 border border-base-200 shadow-sm">
+          <div class="px-6 py-4 border-b border-base-200">
+            <p class="text-sm font-semibold text-base-content">Informations de la parcelle</p>
+            <p class="text-xs text-base-content/40 mt-0.5">ID : {{ parcelle.pk }}</p>
+          </div>
+
+          <div class="p-6 space-y-6">
+            {% include "backoffice/gestion/partials/parcelle_form_fields.html" %}
+          </div>
+
+          <div class="px-6 py-4 border-t border-base-200 flex items-center justify-between gap-3">
+            <a href="{% url 'backoffice:gestion_parcelles' %}" class="btn btn-ghost btn-sm gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+              </svg>
+              Retour à la liste
+            </a>
+            <button type="submit" class="btn btn-primary btn-sm gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              Enregistrer
+            </button>
+          </div>
+        </div>
+      </form>
+
+    {% elif onglet_actif == 'regles' %}
+
+      <div class="card bg-base-100 border border-base-200 shadow-sm">
+        <div class="px-6 py-4 border-b border-base-200 flex items-center justify-between gap-3">
+          <div>
+            <p class="text-sm font-semibold text-base-content">Règles sur la parcelle</p>
+            <p class="text-xs text-base-content/40 mt-0.5">Enregistrements <code class="text-xs">ru_detail</code> liés à cette parcelle (lecture seule)</p>
+          </div>
+          <span class="badge badge-ghost badge-sm">{{ details_regles_parcelle|length }} ligne{{ details_regles_parcelle|length|pluralize }}</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          {% if details_regles_parcelle %}
+            <table class="table table-sm w-full text-sm">
+              <thead>
+                <tr class="text-xs text-base-content/40 uppercase tracking-wide bg-base-200/50 border-b border-base-200">
+                  <th class="font-semibold">ID détail</th>
+                  <th class="font-semibold">ID règle</th>
+                  <th class="font-semibold">Code règle</th>
+                  <th class="font-semibold">Libellé règle</th>
+                  <th class="font-semibold">Valeur</th>
+                  <th class="font-semibold">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for d in details_regles_parcelle %}
+                  <tr class="border-b border-base-100 last:border-0">
+                    <td class="font-mono text-xs text-base-content/60">{{ d.id_detail }}</td>
+                    <td class="font-mono text-xs">{{ d.id_regle_id }}</td>
+                    <td class="text-xs font-mono text-primary">{{ d.id_regle__code|default:"" }}</td>
+                    <td class="text-xs max-w-[12rem]">{{ d.id_regle__libelle|default:""|truncatechars:40 }}</td>
+                    <td class="text-xs max-w-md">{{ d.valeur|default:""|truncatechars:80 }}</td>
+                    <td class="text-xs text-base-content/60 whitespace-nowrap">{{ d.date|date:"d/m/Y"|default:"—" }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% else %}
+            <div class="px-6 py-16 text-center text-sm text-base-content/40">
+              <p>Aucune règle (détail) enregistrée pour cette parcelle.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+    {% endif %}
+
+  </div>
+
+{% endblock %}
