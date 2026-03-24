@@ -4,13 +4,21 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.auth.forms import UserCreationForm
 
-from core.models import RuVoie, RuAlignement
+from core.models import RuVoie, RuAlignement, RuRegle, RuParcelle
 from backoffice.models import GroupProfile
 
 User = get_user_model()
 
 COMMUNES_PARIS = [(i, f'750{str(i-75100).zfill(2)}')
                   for i in range(75101, 75121)]
+
+
+class OptionalIntegerFormField(forms.IntegerField):
+    """Chaîne vide du navigateur → None (évite l’erreur « Enter a whole number »)."""
+    def to_python(self, value):
+        if value in (None, ''):
+            return None
+        return super().to_python(value)
 
 
 class RuVoieForm(forms.ModelForm):
@@ -161,3 +169,118 @@ class AlignementForm(forms.ModelForm):
         if commit:
             alignement.save()
         return alignement
+
+
+class RuRegleForm(forms.ModelForm):
+    """
+    id_regle : clé primaire sans auto-incrément (assignation au save à la création).
+    Champ obligatoire métier affiché (*) : code. Les autres attributs sont optionnels en UX.
+    """
+    use_required_attribute = False
+
+    class Meta:
+        model = RuRegle
+        fields = [
+            'code', 'libelle', 'doc_urba', 'autorite', 'url_doc',
+            'standard_cnig', 'type_cnig', 'code_cnig', 'sous_code_cnig',
+            'cible', 'date', 'phrase_chatbot', 'type_cartads',
+        ]
+        widgets = {
+            'libelle': forms.Textarea(attrs={'rows': 3, 'class': 'textarea textarea-bordered w-full text-sm'}),
+            'phrase_chatbot': forms.Textarea(attrs={'rows': 4, 'class': 'textarea textarea-bordered w-full text-sm'}),
+            'date': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={'type': 'date', 'class': 'input input-bordered w-full text-sm'},
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['code'].required = True
+        for name in self.Meta.fields:
+            if name != 'code' and name in self.fields:
+                self.fields[name].required = False
+
+        self.fields['date'].input_formats = ['%Y-%m-%d']
+
+        for _name, field in self.fields.items():
+            if _name in ('libelle', 'phrase_chatbot', 'date'):
+                continue
+            w = field.widget
+            if isinstance(w, forms.TextInput):
+                w.attrs.setdefault('class', 'input input-bordered w-full text-sm')
+
+    def save(self, commit=True):
+        regle = super().save(commit=False)
+        if regle.pk is None:
+            max_id = RuRegle.objects.aggregate(m=Max('id_regle'))['m']
+            regle.id_regle = (max_id or 0) + 1
+        if commit:
+            regle.save()
+        return regle
+
+
+class RuParcelleForm(forms.ModelForm):
+    """
+    id_parcelle : clé primaire sans auto-incrément (assignation au save à la création).
+    Champ obligatoire métier affiché (*) : identifiant.
+    """
+    use_required_attribute = False
+
+    class Meta:
+        model = RuParcelle
+        fields = [
+            'identifiant', 'dep', 'insee_com', 'insee_com_absorbee',
+            'section', 'numero', 'm2_dgfip', 'enclave', 'statut', 'date',
+        ]
+        widgets = {
+            'date': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={'type': 'date', 'class': 'input input-bordered w-full text-sm'},
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['identifiant'].required = True
+        for name in self.Meta.fields:
+            if name != 'identifiant' and name in self.fields:
+                self.fields[name].required = False
+        self.fields['date'].input_formats = ['%Y-%m-%d']
+
+        num_cls = 'input input-bordered w-full text-sm'
+        for name in ('dep', 'insee_com', 'm2_dgfip', 'enclave'):
+            old = self.fields.get(name)
+            if not old:
+                continue
+            self.fields[name] = OptionalIntegerFormField(
+                label=old.label,
+                required=False,
+                widget=forms.NumberInput(attrs={'class': num_cls}),
+                help_text=old.help_text,
+            )
+
+        for _name, field in self.fields.items():
+            if _name in ('dep', 'insee_com', 'm2_dgfip', 'enclave', 'date'):
+                continue
+            w = field.widget
+            if isinstance(w, forms.TextInput):
+                w.attrs.setdefault('class', 'input input-bordered w-full text-sm')
+            elif isinstance(w, forms.Select):
+                w.attrs.setdefault('class', 'select select-bordered w-full text-sm')
+
+    def clean(self):
+        cleaned = super().clean()
+        for key in ('dep', 'insee_com', 'm2_dgfip'):
+            if cleaned.get(key) is None:
+                cleaned[key] = 0
+        return cleaned
+
+    def save(self, commit=True):
+        parcelle = super().save(commit=False)
+        if parcelle.pk is None:
+            max_id = RuParcelle.objects.aggregate(m=Max('id_parcelle'))['m']
+            parcelle.id_parcelle = (max_id or 0) + 1
+        if commit:
+            parcelle.save()
+        return parcelle

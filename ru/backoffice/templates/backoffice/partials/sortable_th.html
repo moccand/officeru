@@ -1,15 +1,18 @@
+{% load backoffice_tags %}
 {% with current_sort=request.GET.sort current_dir=request.GET.dir %}
   {% if current_sort == col %}
-    <th class="sortable font-semibold {% if current_dir == 'asc' %}sort-asc{% else %}sort-desc{% endif %}" data-col="{{ col }}">
-      <a href="?{{ request.GET.urlencode }}&sort={{ col }}&dir={% if current_dir == 'asc' %}desc{% else %}asc{% endif %}">
-        {{ label }} <span class="sort-icon"></span>
-      </a>
-    </th>
+    {% if current_dir == 'asc' %}
+      <th class="sortable font-semibold sort-asc" data-col="{{ col }}">
+        <a href="?{% url_replace sort=col dir='desc' page=1 %}">{{ label }} <span class="sort-icon"></span></a>
+      </th>
+    {% else %}
+      <th class="sortable font-semibold sort-desc" data-col="{{ col }}">
+        <a href="?{% url_replace sort=col dir='asc' page=1 %}">{{ label }} <span class="sort-icon"></span></a>
+      </th>
+    {% endif %}
   {% else %}
     <th class="sortable font-semibold" data-col="{{ col }}">
-      <a href="?{{ request.GET.urlencode }}&sort={{ col }}&dir=asc">
-        {{ label }} <span class="sort-icon"></span>
-      </a>
+      <a href="?{% url_replace sort=col dir='asc' page=1 %}">{{ label }} <span class="sort-icon"></span></a>
     </th>
   {% endif %}
 {% endwith %}

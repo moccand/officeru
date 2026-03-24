@@ -82,6 +82,17 @@
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
+    /*
+      ModelForm (règles, parcelles, etc.) : bordure rouge comme alignements / voies
+      (input-error / select-error / textarea-error) dès qu’un .ru-inline-error est affiché.
+      Le JS de correction retire le paragraphe → :has() ne s’applique plus.
+    */
+    .ru-form-field:has(.ru-inline-error) input.input-bordered,
+    .ru-form-field:has(.ru-inline-error) select.select-bordered,
+    .ru-form-field:has(.ru-inline-error) textarea.textarea-bordered {
+      border-color: var(--color-error, var(--fallback-er, oklch(63.7% 0.237 25.331))) !important;
+    }
+
     #theme-dropdown-panel {
       display: none;
       position: absolute;
@@ -210,6 +221,26 @@
     }
   }, true);
 })();
+</script>
+
+{# Applique input-error / select-error / textarea-error aux controles dont le .ru-form-field contient un .ru-inline-error (widgets Django sans classe d erreur conditionnelle). #}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.ru-form-field').forEach(function (field) {
+    if (!field.querySelector('.ru-inline-error')) return;
+    var ctrl = field.querySelector(
+      'input.input-bordered, select.select-bordered, textarea.textarea-bordered'
+    );
+    if (!ctrl) return;
+    if (ctrl.tagName === 'SELECT') {
+      ctrl.classList.add('select-error');
+    } else if (ctrl.tagName === 'TEXTAREA') {
+      ctrl.classList.add('textarea-error');
+    } else {
+      ctrl.classList.add('input-error');
+    }
+  });
+});
 </script>
 
 {% block extra_js %}{% endblock %}

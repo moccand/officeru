@@ -1,3 +1,4 @@
+{% load backoffice_tags %}
 {% if page_obj and page_obj.paginator.num_pages > 1 %}
 <div class="px-5 py-3 border-t border-base-200 flex flex-col sm:flex-row items-center justify-between gap-3">
   <p class="text-xs text-base-content/40">
@@ -7,8 +8,8 @@
   </p>
   <div class="flex items-center gap-1 flex-wrap">
     {% if page_obj.has_previous %}
-      <a href="?{{ request.GET.urlencode }}&page=1" class="btn btn-xs btn-ghost">«</a>
-      <a href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}" class="btn btn-xs btn-ghost">‹</a>
+      <a href="?{% url_replace page=1 %}" class="btn btn-xs btn-ghost">«</a>
+      <a href="?{% url_replace page=page_obj.previous_page_number %}" class="btn btn-xs btn-ghost">‹</a>
     {% else %}
       <button class="btn btn-xs btn-ghost opacity-30" disabled>«</button>
       <button class="btn btn-xs btn-ghost opacity-30" disabled>‹</button>
@@ -18,13 +19,13 @@
         {% if i == page_obj.number %}
           <button class="btn btn-xs btn-primary">{{ i }}</button>
         {% else %}
-          <a href="?{{ request.GET.urlencode }}&page={{ i }}" class="btn btn-xs btn-ghost">{{ i }}</a>
+          <a href="?{% url_replace page=i %}" class="btn btn-xs btn-ghost">{{ i }}</a>
         {% endif %}
       {% endif %}
     {% endfor %}
     {% if page_obj.has_next %}
-      <a href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}" class="btn btn-xs btn-ghost">›</a>
-      <a href="?{{ request.GET.urlencode }}&page={{ page_obj.paginator.num_pages }}" class="btn btn-xs btn-ghost">»</a>
+      <a href="?{% url_replace page=page_obj.next_page_number %}" class="btn btn-xs btn-ghost">›</a>
+      <a href="?{% url_replace page=page_obj.paginator.num_pages %}" class="btn btn-xs btn-ghost">»</a>
     {% else %}
       <button class="btn btn-xs btn-ghost opacity-30" disabled>›</button>
       <button class="btn btn-xs btn-ghost opacity-30" disabled>»</button>

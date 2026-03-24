@@ -9,6 +9,27 @@ from django import template
 register = template.Library()
 
 
+@register.simple_tag(takes_context=True)
+def url_replace(context, **kwargs):
+    """
+    Reconstruit la query string en remplaçant les clés indiquées,
+    sans jamais dupliquer un paramètre.
+
+    Usage dans un template :
+        href="?{% url_replace page=1 %}"
+        href="?{% url_replace sort='libelle' dir='asc' page=1 %}"
+
+    Les clés non mentionnées sont conservées telles quelles.
+    """
+    request = context.get('request')
+    if not request:
+        return ''
+    params = request.GET.copy()
+    for key, value in kwargs.items():
+        params[key] = value
+    return params.urlencode()
+
+
 @register.simple_tag
 def menu_alert(alerts: dict, page_id: str) -> str:
     """
