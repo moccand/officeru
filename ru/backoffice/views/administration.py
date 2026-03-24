@@ -2,7 +2,6 @@
 backoffice/views/administration.py
 ────────────────────────────────────
 Vues de la section Administration :
-  - Configuration
   - Utilisateurs, Groupes, Privilèges (liste + CRUD)
 """
 from django.contrib import messages
@@ -23,13 +22,6 @@ from ..forms import (
 from .base import GROUPES_SYSTEME, RuContextMixin, _admin_context, get_menu_alerts
 
 User = get_user_model()
-
-
-# ── Configuration ─────────────────────────────────────────────
-class AdministrationConfigurationView(RuContextMixin, TemplateView):
-    template_name = 'backoffice/administration/configuration.html'
-    active_page   = 'administration:configuration'
-    breadcrumbs   = [{'label': 'Administration'}, {'label': 'Configuration'}]
 
 
 # ── Listes ────────────────────────────────────────────────────

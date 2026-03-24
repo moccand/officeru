@@ -2,7 +2,7 @@
 backoffice/views/gestion_misc.py
 ──────────────────────────────────
 Vues de gestion sans CRUD propre :
-  - Mutations
+  - Mises à jour (Fusions / Divisions)
   - Gestion avancée (onglets)
   - Analyse des référentiels
 """
@@ -17,11 +17,19 @@ _ONGLETS_GESTION_AVANCEE = frozenset({
     'associations_masse',
 })
 
+_ONGLETS_FUSIONS_DIVISIONS = frozenset({'fusions', 'divisions'})
 
-class GestionMutationsView(RuContextMixin, TemplateView):
-    template_name = 'backoffice/gestion/mutations.html'
-    active_page   = 'gestion:mutations'
-    breadcrumbs   = [{'label': 'Gestion'}, {'label': 'Mutations'}]
+
+class GestionMisesajourView(RuContextMixin, TemplateView):
+    template_name = 'backoffice/gestion/misesajour.html'
+    active_page   = 'gestion:misesajour'
+    breadcrumbs   = [{'label': 'Gestion'}, {'label': 'Fusions / Divisions'}]
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        onglet = self.request.GET.get('onglet', 'fusions')
+        ctx['onglet_actif'] = onglet if onglet in _ONGLETS_FUSIONS_DIVISIONS else 'fusions'
+        return ctx
 
 
 class GestionAvanceeView(RuContextMixin, TemplateView):

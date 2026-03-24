@@ -22,7 +22,7 @@ from django.urls import reverse
 from django.views import View
 from django.views.generic import ListView
 
-from core.models import RuDetail, RuDetailAlignement, RuRegle
+from core.models import RuDetailAlignement, RuRegle
 
 from ..forms import RuRegleForm
 from .base import _regle_breadcrumbs, get_menu_alerts
@@ -150,42 +150,26 @@ class RegleAjouterView(View):
 class RegleEditView(View):
     template_name = 'backoffice/gestion/regle_edit.html'
 
-    def _ctx(self, request, regle, form, onglet, details):
+    def _ctx(self, request, regle, form, onglet):
         return {
-            'active_page':    'gestion:regles',
-            'breadcrumbs':    _regle_breadcrumbs({'label': str(regle)}),
-            'menu_alerts':    get_menu_alerts(request),
-            'regle':          regle,
-            'form':           form,
-            'onglet_actif':   onglet,
-            'details_regle':  details,
+            'active_page':  'gestion:regles',
+            'breadcrumbs':  _regle_breadcrumbs({'label': str(regle)}),
+            'menu_alerts':  get_menu_alerts(request),
+            'regle':        regle,
+            'form':         form,
+            'onglet_actif': onglet,
         }
 
     def _get_onglet(self, request):
         onglet = request.GET.get('onglet', 'regle')
         return onglet if onglet in ('regle', 'valeurs') else 'regle'
 
-    def _details(self, regle):
-        return list(
-            RuDetail.objects.filter(id_regle=regle.pk)
-            .order_by('id_detail')
-            .values(
-                'id_detail',
-                'id_parcelle_id',
-                'id_parcelle__identifiant',
-                'valeur',
-                'date_creation',
-                'date_modification',
-            )[:500]
-        )
-
     def get(self, request, pk):
         regle   = get_object_or_404(RuRegle, pk=pk)
         onglet  = self._get_onglet(request)
         form    = RuRegleForm(instance=regle)
-        details = self._details(regle)
         return render(request, self.template_name,
-                      self._ctx(request, regle, form, onglet, details))
+                      self._ctx(request, regle, form, onglet))
 
     def post(self, request, pk):
         regle  = get_object_or_404(RuRegle, pk=pk)
@@ -196,9 +180,8 @@ class RegleEditView(View):
             return redirect(
                 f"{reverse('backoffice:regle_edit', args=[pk])}?onglet={onglet}"
             )
-        details = self._details(regle)
         return render(request, self.template_name,
-                      self._ctx(request, regle, form, onglet, details))
+                      self._ctx(request, regle, form, onglet))
 
 
 class RegleSupprimerView(View):

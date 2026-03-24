@@ -1,7 +1,7 @@
 """
 backoffice/views/export_api.py
 ────────────────────────────────
-Vues Export et API (Swagger, Configuration).
+Vues Export et API (Swagger).
 """
 from django.views.generic import TemplateView
 
@@ -17,10 +17,4 @@ class ExportExportsInternetView(RuContextMixin, TemplateView):
 class ApiSwaggerView(RuContextMixin, TemplateView):
     template_name = 'backoffice/api/swagger.html'
     active_page   = 'api:swagger'
-    breadcrumbs   = [{'label': 'API'}, {'label': 'Swagger'}]
-
-
-class ApiConfigurationView(RuContextMixin, TemplateView):
-    template_name = 'backoffice/api/configuration.html'
-    active_page   = 'api:configuration'
-    breadcrumbs   = [{'label': 'API'}, {'label': "Configuration de l'API"}]
+    breadcrumbs   = [{'label': 'API'}, {'label': 'Configuration et Swagger'}]

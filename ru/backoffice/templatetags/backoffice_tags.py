@@ -5,8 +5,15 @@ Tags custom pour l'application backoffice RU.
 Chargement dans les templates : {% load backoffice_tags %}
 """
 from django import template
+from django.conf import settings
 
 register = template.Library()
+
+
+@register.simple_tag
+def ru_application_release() -> str:
+    """Valeur de settings.APPLICATION_RELEASE (ex. v2.0), affichée en sidebar."""
+    return getattr(settings, 'APPLICATION_RELEASE', '')
 
 
 @register.simple_tag(takes_context=True)
@@ -36,11 +43,11 @@ def menu_alert(alerts: dict, page_id: str) -> str:
     Affiche une puce d'alerte dans le menu sidebar.
 
     Usage :
-        {% menu_alert menu_alerts "gestion:mutations" %}
+        {% menu_alert menu_alerts "gestion:misesajour" %}
 
     alerts : dict passé par la view
-        {"gestion:mutations": True}   → point rouge animé
-        {"gestion:mutations": 3}      → badge numérique "3"
+        {"gestion:misesajour": True}   → point rouge animé
+        {"gestion:misesajour": 3}      → badge numérique "3"
     """
     if not alerts or page_id not in alerts:
         return ''

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="{{ request.session.ru_theme|default:'light' }}">
+<html lang="fr" data-theme="{% if request.session.ru_theme == 'dark' %}dark{% else %}light{% endif %}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,36 +10,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   {# Applique la taille de police sauvegardée avant tout rendu (évite le flash) #}
   <script>(function(){var s={'sm':'90%','md':'100%','lg':'112.5%'};document.documentElement.style.fontSize=s[localStorage.getItem('ru_font_size')||'md']||'100%';})()</script>
-
-    <style>
-    [data-theme="colorblind"] {
-      color-scheme: light;
-      --color-base-100: oklch(98% 0.005 240);
-      --color-base-200: oklch(93% 0.012 240);
-      --color-base-300: oklch(86% 0.018 240);
-      --color-base-content: oklch(14% 0.025 240);
-      --color-primary: oklch(42% 0.19 255);
-      --color-primary-content: oklch(99% 0.005 255);
-      --color-secondary: oklch(62% 0.20 50);
-      --color-secondary-content: oklch(14% 0.04 50);
-      --color-accent: oklch(57% 0.17 220);
-      --color-accent-content: oklch(99% 0.005 220);
-      --color-neutral: oklch(30% 0.02 240);
-      --color-neutral-content: oklch(97% 0.005 240);
-      --color-info: oklch(54% 0.16 240);
-      --color-info-content: oklch(99% 0.005 240);
-      --color-success: oklch(47% 0.15 195);
-      --color-success-content: oklch(99% 0.005 195);
-      --color-warning: oklch(67% 0.21 55);
-      --color-warning-content: oklch(14% 0.04 55);
-      --color-error: oklch(40% 0.21 285);
-      --color-error-content: oklch(99% 0.005 285);
-      --radius-selector: 0.5rem;
-      --radius-field: 0.5rem;
-      --radius-box: 0.75rem;
-      --border: 1px;
-    }
-  </style>
 
     <style type="text/tailwindcss">
     * { font-family: 'Figtree', sans-serif !important; }
@@ -94,15 +64,6 @@
     .ru-form-field:has(.ru-inline-error) textarea.textarea-bordered {
       border-color: var(--color-error, var(--fallback-er, oklch(63.7% 0.237 25.331))) !important;
     }
-
-    #theme-dropdown-panel {
-      display: none;
-      position: absolute;
-      bottom: calc(100% + 6px);
-      left: 0; right: 0;
-      z-index: 100;
-    }
-    #theme-dropdown-panel.open { display: block; }
 
     .date-range-row { display:none; }
     .date-range-row.visible { display:flex; }

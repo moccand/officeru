@@ -96,6 +96,9 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # ── Authentification ──────────────────────────────────────────
 LOGIN_URL = 'backoffice:login'
 
+# ── Version affichée (sidebar, etc.) ──────────────────────────
+APPLICATION_RELEASE = 'v2.0'
+
 # ── Logging ───────────────────────────────────────────────────
 
 LOG_DIR = Path(env('DJANGO_LOG_DIR'))

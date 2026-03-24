@@ -1,0 +1,128 @@
+{% extends "backoffice/layouts/base.html" %}
+
+{% block page_title %}Accueil — RU{% endblock %}
+
+{% block page_header %}{% endblock %}
+
+{% block content %}
+
+  <div class="space-y-6 fade-in delay-1">
+
+    {# ── Hero ── #}
+    <div class="hero min-h-[220px] md:min-h-[260px] rounded-box bg-base-100 border border-base-200 shadow-sm">
+      <div class="hero-content flex-col lg:flex-row gap-6 lg:gap-10 px-6 py-8 text-center lg:text-left">
+        <div class="max-w-xl">
+          <p class="text-sm font-medium text-primary mb-2">Renseignement d’urbanisme</p>
+          <p class="text-2xl md:text-3xl font-bold text-base-content leading-tight">
+            Vue d’ensemble de votre référentiel
+          </p>
+          <p class="text-sm text-base-content/60 mt-3 leading-relaxed">
+            Données de démonstration : les indicateurs et cartes ci-dessous seront alimentés par la base métier.
+          </p>
+          <div class="flex flex-wrap gap-2 justify-center lg:justify-start mt-5">
+            <a href="{% url 'backoffice:consultation_carte' %}" class="btn btn-primary btn-sm">Ouvrir la carte</a>
+            <a href="{% url 'backoffice:gestion_parcelles' %}" class="btn btn-ghost btn-sm">Gestion parcelles</a>
+          </div>
+        </div>
+        <div class="hidden md:flex shrink-0 w-40 h-40 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10 items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-20 text-primary/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 9m0 8V9m0 0L9 7"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    {# ── Stats (données factices) ── #}
+    <div class="stats stats-vertical lg:stats-horizontal shadow w-full bg-base-100 border border-base-200 rounded-box">
+      <div class="stat place-items-center lg:place-items-start border-base-200 lg:border-e border-b lg:border-b-0">
+        <div class="stat-figure text-primary">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"/>
+          </svg>
+        </div>
+        <div class="stat-title text-base-content/50">Parcelles référencées</div>
+        <div class="stat-value text-primary">86&nbsp;590</div>
+        <div class="stat-desc text-base-content/40">+120 ce mois-ci (factice)</div>
+      </div>
+      <div class="stat place-items-center lg:place-items-start border-base-200 lg:border-e border-b lg:border-b-0">
+        <div class="stat-figure text-secondary">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <circle cx="4" cy="20" r="2.5" fill="currentColor" stroke="none"/>
+            <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/>
+            <circle cx="20" cy="4" r="2.5" fill="currentColor" stroke="none"/>
+          </svg>
+        </div>
+        <div class="stat-title text-base-content/50">Alignements actifs</div>
+        <div class="stat-value text-secondary">12&nbsp;408</div>
+        <div class="stat-desc text-base-content/40">Stable sur 30 jours (factice)</div>
+      </div>
+      <div class="stat place-items-center lg:place-items-start">
+        <div class="stat-figure text-accent">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+        </div>
+        <div class="stat-title text-base-content/50">Règles documentées</div>
+        <div class="stat-value text-accent">1&nbsp;842</div>
+        <div class="stat-desc text-base-content/40">34 mises à jour (factice)</div>
+      </div>
+    </div>
+
+    {# ── Cards (DaisyUI : centered content + paddings) — images à personnaliser #}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="card bg-base-100 w-full shadow-sm">
+        <figure class="px-10 pt-10">
+          <img
+            src="{% include 'backoffice/partials/regles_urbanisme_paris_card_img_data_uri.html' %}"
+            alt="Site Règles d’urbanisme de Paris : bandeau avec illustration isométrique de la ville, bâtiments, arbres, cycliste et texte « Règles d’urbanisme »."
+            class="rounded-xl w-full aspect-video object-cover" />
+        </figure>
+        <div class="card-body items-center text-center">
+          <h2 class="card-title">Les règles d'urbanisme à Paris</h2>
+          <p class="text-base-content/70">
+            Consulter le site du PLU Bioclimatique et des règles d'urbanisme à Paris.
+          </p>
+          <div class="card-actions">
+            <a href="https://regles-urbanisme.paris.fr/plu-bioclimatique/" class="btn btn-primary btn-sm" target="_blank" rel="noopener noreferrer">Ouvrir le site</a>
+          </div>
+        </div>
+      </div>
+      <div class="card bg-base-100 w-full shadow-sm">
+        <figure class="px-10 pt-10">
+          <img
+            src="{% include 'backoffice/partials/ru_numerique_card_img_data_uri.html' %}"
+            alt="Capture du portail Renseignements d’urbanisme : étape de recherche d’une parcelle par adresse ou référence cadastrale."
+            class="rounded-xl w-full aspect-video object-cover" />
+        </figure>
+        <div class="card-body items-center text-center">
+          <h2 class="card-title">Service numérique des RU</h2>
+          <p class="text-base-content/70">
+            Service numérique de délivrance d'une notice PDF des RU.
+          </p>
+          <div class="card-actions">
+            <a href="https://noticeru.paris.fr/" class="btn btn-primary btn-sm" target="_blank" rel="noopener noreferrer">Ouvrir le service</a>
+          </div>
+        </div>
+      </div>
+      <div class="card bg-base-100 w-full shadow-sm">
+        <figure class="px-10 pt-10">
+          <img
+            src="{% include 'backoffice/partials/paris_fr_ru_card_img_data_uri.html' %}"
+            alt="Page Paris.fr « Les renseignements d’urbanisme » : vue aérienne de Paris avec grue et immeubles."
+            class="rounded-xl w-full aspect-video object-cover" />
+        </figure>
+        <div class="card-body items-center text-center">
+          <h2 class="card-title">Les RU sur Paris.fr</h2>
+          <p class="text-base-content/70">
+            La page Paris.fr des renseignements d'urbanisme.
+          </p>
+          <div class="card-actions">
+            <a href="https://www.paris.fr/pages/les-renseignements-d-urbanisme-ru-2345/" class="btn btn-primary btn-sm" target="_blank" rel="noopener noreferrer">Ouvrir le site</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+{% endblock %}

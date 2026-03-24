@@ -9,7 +9,7 @@
         Règle : <span class="font-mono text-primary">{{ regle.code }}</span>
       </h1>
       <p class="text-sm text-base-content/40 mt-0.5">
-        Modification de la règle et consultation des valeurs associées (parcelles).
+        Modification de la règle et gestion des valeurs (à venir).
       </p>
     </div>
     <a href="{% url 'backoffice:gestion_regles' %}" class="btn btn-ghost btn-sm gap-2 shrink-0">
@@ -38,7 +38,7 @@
     </a>
   </div>
 
-  <div class="fade-in delay-2 max-w-4xl">
+  <div class="fade-in delay-2 w-full">
 
     {% if onglet_actif == 'regle' %}
 
@@ -84,45 +84,11 @@
     {% elif onglet_actif == 'valeurs' %}
 
       <div class="card bg-base-100 border border-base-200 shadow-sm">
-        <div class="px-6 py-4 border-b border-base-200 flex items-center justify-between gap-3">
-          <div>
-            <p class="text-sm font-semibold text-base-content">Valeurs (détails parcelle)</p>
-            <p class="text-xs text-base-content/40 mt-0.5">Enregistrements <code class="text-xs">ru_detail</code> liés à cette règle (lecture seule)</p>
-          </div>
-          <span class="badge badge-ghost badge-sm">{{ details_regle|length }} ligne{{ details_regle|length|pluralize }}</span>
+        <div class="px-6 py-4 border-b border-base-200">
+          <p class="text-sm font-semibold text-base-content">Valeurs</p>
         </div>
-
-        <div class="overflow-x-auto">
-          {% if details_regle %}
-            <table class="table table-sm w-full text-sm">
-              <thead>
-                <tr class="text-xs text-base-content/40 uppercase tracking-wide bg-base-200/50 border-b border-base-200">
-                  <th class="font-semibold">ID détail</th>
-                  <th class="font-semibold">ID parcelle</th>
-                  <th class="font-semibold">Identifiant</th>
-                  <th class="font-semibold">Valeur</th>
-                  <th class="font-semibold">Création</th>
-                  <th class="font-semibold">Modification</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for d in details_regle %}
-                  <tr class="border-b border-base-100 last:border-0">
-                    <td class="font-mono text-xs text-base-content/60">{{ d.id_detail }}</td>
-                    <td class="text-xs font-mono">{{ d.id_parcelle_id }}</td>
-                    <td class="text-xs">{{ d.id_parcelle__identifiant|default:"" }}</td>
-                    <td class="text-xs max-w-md">{{ d.valeur|default:""|truncatechars:80 }}</td>
-                    <td class="text-xs text-base-content/60 whitespace-nowrap">{% if d.date_creation %}{{ d.date_creation|date:"d/m/Y" }}{% else %}—{% endif %}</td>
-                    <td class="text-xs text-base-content/60 whitespace-nowrap">{% if d.date_modification %}{{ d.date_modification|date:"d/m/Y" }}{% else %}—{% endif %}</td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          {% else %}
-            <div class="px-6 py-16 text-center text-sm text-base-content/40">
-              <p>Aucune valeur enregistrée pour cette règle dans les détails parcelle.</p>
-            </div>
-          {% endif %}
+        <div class="p-6 text-sm text-base-content/60">
+          Page pour gérer plus tard des listes de valeurs propres à chaque règle.
         </div>
       </div>
 

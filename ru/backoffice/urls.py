@@ -35,9 +35,9 @@ urlpatterns = [
          name='consultation_parcelles'),
 
     # ── Gestion ──────────────────────────────────────────────────────
-    path('gestion/mutations/',
-         views.GestionMutationsView.as_view(),
-         name='gestion_mutations'),
+    path('gestion/misesajour/',
+         views.GestionMisesajourView.as_view(),
+         name='gestion_misesajour'),
 
     path('api/parcelles-autocomplete/',
         views.ParcellesAutocompleteView.as_view(),
@@ -155,17 +155,9 @@ path('administration/groupes/<int:pk>/supprimer/',
      views.GroupeSupprimerView.as_view(),
      name='groupe_supprimer'),
 
-#Configuration
-    path('administration/configuration/',
-         views.AdministrationConfigurationView.as_view(),
-         name='administration_configuration'),
-
     # ── API ──────────────────────────────────────────────────────────
     path('api/swagger/',
          views.ApiSwaggerView.as_view(),
          name='api_swagger'),
-    path('api/configuration/',
-         views.ApiConfigurationView.as_view(),
-         name='api_configuration'),
 
 ]

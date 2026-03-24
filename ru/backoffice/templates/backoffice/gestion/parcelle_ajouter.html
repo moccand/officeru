@@ -19,7 +19,7 @@
 
 {% block content %}
 
-  <form method="post" action="{% url 'backoffice:parcelle_ajouter' %}" novalidate class="fade-in delay-1 max-w-4xl">
+  <form method="post" action="{% url 'backoffice:parcelle_ajouter' %}" novalidate class="fade-in delay-1 w-full">
     {% csrf_token %}
 
     {% if form.errors %}

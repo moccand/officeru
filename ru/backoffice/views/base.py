@@ -9,7 +9,6 @@ import json
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.http import JsonResponse
-from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import TemplateView
 
@@ -17,7 +16,7 @@ User = get_user_model()
 
 # ── Constantes ───────────────────────────────────────────────
 GROUPES_SYSTEME = {'ADMINISTRATEUR_TECH', 'ADMINISTRATEUR_FONC', 'EDITEUR', 'VALIDATEUR', 'API_USER'}
-ALLOWED_THEMES  = {'light', 'dark', 'colorblind'}
+ALLOWED_THEMES  = {'light', 'dark'}
 
 
 # ── Alertes menu ─────────────────────────────────────────────
@@ -27,7 +26,7 @@ def get_menu_alerts(request) -> dict:
     À enrichir avec de vraies requêtes BDD.
     """
     return {
-        # "gestion:mutations": True,
+        # "gestion:misesajour": True,
     }
 
 
@@ -106,9 +105,8 @@ def set_theme(request):
 
 
 # ── Accueil ───────────────────────────────────────────────────
-class HomeView(TemplateView):
-    """Redirige vers la page par défaut selon le statut d'authentification."""
-    def get(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            return redirect('backoffice:consultation_carte')
-        return redirect('backoffice:consultation_carte')
+class HomeView(RuContextMixin, TemplateView):
+    """Tableau de bord d’accueil (aperçu factice, à brancher sur les données réelles)."""
+    template_name = 'backoffice/home.html'
+    active_page   = 'home'
+    breadcrumbs   = []

@@ -24,7 +24,7 @@ from .consultation import (
 )
 
 from .gestion_misc import (
-    GestionMutationsView,
+    GestionMisesajourView,
     GestionAvanceeView,
     GestionAnalyseReferentielsView,
 )
@@ -66,11 +66,9 @@ from .gestion_voies import (
 from .export_api import (
     ExportExportsInternetView,
     ApiSwaggerView,
-    ApiConfigurationView,
 )
 
 from .administration import (
-    AdministrationConfigurationView,
     AdministrationUtilisateursView,
     AdministrationGroupesView,
     AdministrationPrivilegesView,
@@ -91,7 +89,7 @@ __all__ = [
     # consultation
     'ConsultationCarteView', 'ConsultationParcellesView',
     # gestion misc
-    'GestionMutationsView', 'GestionAvanceeView', 'GestionAnalyseReferentielsView',
+    'GestionMisesajourView', 'GestionAvanceeView', 'GestionAnalyseReferentielsView',
     # gestion parcelles
     'ParcellesAutocompleteView', 'ReglesParcelleAutocompleteView', 'GestionParcellesView',
     'ParcelleAjouterView', 'ParcelleEditView', 'ParcelleSupprimerView',
@@ -107,9 +105,8 @@ __all__ = [
     'GestionVoieEditView', 'GestionVoieAjouterView',
     'GestionVoieDupliquerView', 'GestionVoieSupprimerView',
     # export / api
-    'ExportExportsInternetView', 'ApiSwaggerView', 'ApiConfigurationView',
+    'ExportExportsInternetView', 'ApiSwaggerView',
     # administration
-    'AdministrationConfigurationView',
     'AdministrationUtilisateursView', 'AdministrationGroupesView',
     'AdministrationPrivilegesView',
     'UtilisateurAjouterView', 'UtilisateurEditView', 'UtilisateurSupprimerView',

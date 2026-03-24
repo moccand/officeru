@@ -1,0 +1,41 @@
+{% extends "backoffice/layouts/base.html" %}
+
+{% block page_title %}Fusions / Divisions — Gestion{% endblock %}
+
+{% block page_header %}
+  <div class="fade-in delay-1 mb-6 flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-base-content">Fusions / Divisions</h1>
+      <p class="text-sm text-base-content/40 mt-0.5">Gestion des fusions et divisions de parcelles.</p>
+    </div>
+  </div>
+{% endblock %}
+
+{% block content %}
+
+  <div role="tablist" class="tabs tabs-border mb-4 fade-in delay-1">
+    <a href="?onglet=fusions" role="tab" class="tab {% if onglet_actif == 'fusions' %}tab-active{% endif %}">Fusions</a>
+    <a href="?onglet=divisions" role="tab" class="tab {% if onglet_actif == 'divisions' %}tab-active{% endif %}">Divisions</a>
+  </div>
+
+  <div class="fade-in delay-2 w-full">
+    {% if onglet_actif == 'fusions' %}
+      <div class="card bg-base-100 border border-base-200 shadow-sm">
+        <div class="px-6 py-4 border-b border-base-200">
+          <p class="text-sm font-semibold text-base-content">Fusions</p>
+          <p class="text-xs text-base-content/40 mt-0.5">Contenu à préciser.</p>
+        </div>
+        <div class="p-6 text-sm text-base-content/50">—</div>
+      </div>
+    {% elif onglet_actif == 'divisions' %}
+      <div class="card bg-base-100 border border-base-200 shadow-sm">
+        <div class="px-6 py-4 border-b border-base-200">
+          <p class="text-sm font-semibold text-base-content">Divisions</p>
+          <p class="text-xs text-base-content/40 mt-0.5">Contenu à préciser.</p>
+        </div>
+        <div class="p-6 text-sm text-base-content/50">—</div>
+      </div>
+    {% endif %}
+  </div>
+
+{% endblock %}
