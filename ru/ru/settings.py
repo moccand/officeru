@@ -85,7 +85,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # ── Internationalisation ──────────────────────────────────────
 LANGUAGE_CODE = 'fr'
-TIME_ZONE     = 'UTC'
+TIME_ZONE     = 'Europe/Paris'
 USE_I18N      = True
 USE_TZ        = True
 
