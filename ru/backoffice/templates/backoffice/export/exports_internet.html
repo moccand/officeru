@@ -169,7 +169,7 @@
                       {% endif %}
 
                       {# Télécharger #}
-                      {% if e.nom_du_fichier %}
+                      {% if e.statut == 'TERMINE' and e.nom_du_fichier %}
                         <a
                           href="{% url 'backoffice:export_exports_internet' %}?download={{ e.pk }}"
                           class="btn btn-ghost btn-xs btn-square tooltip tooltip-left inline-flex items-center justify-center"
@@ -180,46 +180,97 @@
                           </svg>
                         </a>
                       {% else %}
-                        <span class="btn btn-ghost btn-xs btn-square inline-flex items-center justify-center opacity-40" data-tip="Aucun fichier">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
-                          </svg>
-                        </span>
+                        {% if e.statut == 'EN COURS' or e.statut == 'EN ERREUR' or e.statut == 'ARCHIVE SUPPRIMEE' %}
+                          <span
+                            class="btn btn-ghost btn-xs btn-square tooltip tooltip-left tooltip-neutral opacity-40 inline-flex items-center justify-center"
+                            data-tip="Télécharger"
+                            aria-label="Télécharger le fichier de l export">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
+                            </svg>
+                          </span>
+                        {% else %}
+                          <span
+                            class="btn btn-ghost btn-xs btn-square tooltip tooltip-left tooltip-neutral inline-flex items-center justify-center"
+                            data-tip="Télécharger"
+                            aria-label="Télécharger le fichier de l export">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
+                            </svg>
+                          </span>
+                        {% endif %}
                       {% endif %}
 
                       {# Supprimer le Fichier #}
-                      <form method="post" action="{% url 'backoffice:export_exports_internet' %}" class="inline">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="delete_export_file" />
-                        <input type="hidden" name="export_pk" value="{{ e.pk }}" />
-                        <button
-                          type="submit"
-                          class="btn btn-ghost btn-xs btn-square tooltip tooltip-left inline-flex items-center justify-center {% if not e.nom_du_fichier %}opacity-40{% endif %}"
-                          data-tip="Supprimer le fichier"
-                          aria-label="Supprimer le fichier">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40 hover:text-error transition-colors {% if not e.nom_du_fichier %}pointer-events-none{% endif %}" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.5 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.5L14.5 3z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h8"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3v5h5"/>
-                          </svg>
-                        </button>
-                      </form>
+                      {% if e.statut == 'TERMINE' and e.nom_du_fichier %}
+                        <form method="post" action="{% url 'backoffice:export_exports_internet' %}" class="inline">
+                          {% csrf_token %}
+                          <input type="hidden" name="action" value="delete_export_file" />
+                          <input type="hidden" name="export_pk" value="{{ e.pk }}" />
+                          <button
+                            type="submit"
+                            class="btn btn-ghost btn-xs btn-square tooltip tooltip-left inline-flex items-center justify-center"
+                            data-tip="Supprimer le fichier"
+                            aria-label="Supprimer le fichier">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40 hover:text-error transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.5 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.5L14.5 3z"/>
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h8"/>
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3v5h5"/>
+                            </svg>
+                          </button>
+                        </form>
+                      {% else %}
+                        {% if e.statut == 'EN COURS' or e.statut == 'EN ERREUR' or e.statut == 'ARCHIVE SUPPRIMEE' %}
+                          <span
+                            class="btn btn-ghost btn-xs btn-square tooltip tooltip-left tooltip-neutral opacity-40 inline-flex items-center justify-center"
+                            data-tip="Supprimer le fichier"
+                            aria-label="Supprimer le fichier">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.5 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.5L14.5 3z"/>
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h8"/>
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3v5h5"/>
+                            </svg>
+                          </span>
+                        {% else %}
+                          <span
+                            class="btn btn-ghost btn-xs btn-square tooltip tooltip-left tooltip-neutral inline-flex items-center justify-center"
+                            data-tip="Supprimer le fichier"
+                            aria-label="Supprimer le fichier">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.5 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.5L14.5 3z"/>
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h8"/>
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3v5h5"/>
+                            </svg>
+                          </span>
+                        {% endif %}
+                      {% endif %}
 
                       {# Supprimer la ligne #}
-                      <form method="post" action="{% url 'backoffice:export_exports_internet' %}" class="inline">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="delete_export_line" />
-                        <input type="hidden" name="export_pk" value="{{ e.pk }}" />
-                        <button
-                          type="submit"
-                          class="btn btn-ghost btn-xs btn-square tooltip tooltip-left inline-flex items-center justify-center"
+                      {% if e.statut == 'EN COURS' %}
+                        <span
+                          class="btn btn-ghost btn-xs btn-square tooltip tooltip-left tooltip-neutral opacity-40 inline-flex items-center justify-center"
                           data-tip="Supprimer la ligne"
                           aria-label="Supprimer l export">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40 hover:text-error transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3H5z"/>
                           </svg>
-                        </button>
-                      </form>
+                        </span>
+                      {% else %}
+                        <form method="post" action="{% url 'backoffice:export_exports_internet' %}" class="inline">
+                          {% csrf_token %}
+                          <input type="hidden" name="action" value="delete_export_line" />
+                          <input type="hidden" name="export_pk" value="{{ e.pk }}" />
+                          <button
+                            type="submit"
+                            class="btn btn-ghost btn-xs btn-square tooltip tooltip-left inline-flex items-center justify-center"
+                            data-tip="Supprimer la ligne"
+                            aria-label="Supprimer l export">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40 hover:text-error transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3H5z"/>
+                            </svg>
+                          </button>
+                        </form>
+                      {% endif %}
 
                     </div>
                   </td>
