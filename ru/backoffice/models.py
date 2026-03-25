@@ -27,3 +27,78 @@ class GroupProfile(models.Model):
 
     def __str__(self):
         return f'Profil — {self.group.name}'
+
+
+class RuExport(models.Model):
+    """
+    Suivi des exports Internet (SN RU + Règles d'urbanisme).
+
+    Les champs "fichier" et les compteurs numériques sont laissés optionnels tant que
+    l'export n'est pas encore terminé.
+    """
+
+    class Statut(models.TextChoices):
+        EN_COURS = 'EN COURS', 'EN COURS'
+        EN_ERREUR = 'EN ERREUR', 'EN ERREUR'
+        TERMINE = 'TERMINE', 'TERMINE'
+        ARCHIVE_SUPPRIMEE = 'ARCHIVE SUPPRIMEE', 'ARCHIVE SUPPRIMEE'
+
+    datetime_demande_export = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Date de la demande d export',
+    )
+    login_agent = models.CharField(
+        max_length=150,
+        verbose_name='Login de l agent',
+    )
+    commentaire = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name='Commentaire',
+    )
+    datetime_fin_export = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name='Date de fin de l export',
+    )
+    statut = models.CharField(
+        max_length=30,
+        choices=Statut.choices,
+        default=Statut.EN_COURS,
+        verbose_name='Statut de l export',
+    )
+    nom_du_fichier = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name='Nom du fichier',
+    )
+    poids_du_fichier = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name='Poids du fichier',
+    )
+    nombre_de_parcelles = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='Nombre de parcelles',
+    )
+    nombre_d_alignements = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='Nombre d alignements',
+    )
+    nombre_de_regles = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='Nombre de regles',
+    )
+    nombre_de_details = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name='Nombre de details',
+    )
+
+    def __str__(self) -> str:
+        return f'Export {self.pk} — {self.statut}'

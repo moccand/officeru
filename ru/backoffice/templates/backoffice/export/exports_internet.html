@@ -1,0 +1,267 @@
+{% extends "backoffice/layouts/base.html" %}
+
+{% block page_title %}Export — Internet{% endblock %}
+
+{% block page_header %}
+  <div class="fade-in delay-1 mb-6 flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-base-content">Export des fichiers</h1>
+      <p class="text-sm text-base-content/40 mt-0.5">Export des fichiers pour alimentation de SN RU et Règles d'urbanisme</p>
+    </div>
+  </div>
+{% endblock %}
+
+{% block content %}
+
+  {% include "backoffice/partials/messages.html" %}
+
+  <div class="fade-in delay-2 space-y-6">
+    <div class="flex flex-wrap items-center gap-3">
+      <form method="get" action="{% url 'backoffice:export_exports_internet' %}" class="flex flex-1 min-w-[18rem]">
+        <label class="input input-bordered input-sm flex items-center gap-2 flex-1 min-w-0">
+          <span class="sr-only">Recherche exports</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z"/>
+          </svg>
+          <input name="q" type="text" value="{{ q|default:'' }}" class="grow bg-transparent outline-none text-sm" placeholder="Rechercher (tous champs textes)…" />
+        </label>
+        <button type="submit" class="btn btn-ghost btn-sm">Rechercher</button>
+      </form>
+    </div>
+
+    <div class="card bg-base-100 border border-base-200 shadow-sm">
+      <div class="px-6 py-4 border-b border-base-200 flex items-center justify-between gap-3">
+        <div>
+          <p class="text-sm font-semibold text-base-content">Liste des exports</p>
+          <p class="text-xs text-base-content/40 mt-0.5">Tri par date de demande (DESC).</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          {% if export_en_cours_exists %}
+            <div class="tooltip tooltip-top" data-tip="Il y a déjà un export en cours, attendre qu il se termine et recommencer">
+              <button
+                id="btn-create-export"
+                type="button"
+                class="btn btn-primary btn-sm gap-2"
+                disabled
+                onclick="toggleCreateExportForm(true)">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Créer un export
+              </button>
+            </div>
+          {% else %}
+            <button
+              id="btn-create-export"
+              type="button"
+              class="btn btn-primary btn-sm gap-2"
+              onclick="toggleCreateExportForm(true)">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Créer un export
+            </button>
+          {% endif %}
+        </div>
+      </div>
+
+      <form
+        id="create-export-form"
+        method="post"
+        action="{% url 'backoffice:export_exports_internet' %}"
+        class="px-6 py-4 border-b border-base-200 {% if show_create_export_form %}{% else %}hidden{% endif %}"
+        novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="action" value="create_export" />
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+          <div class="ru-form-field md:col-span-2">
+            <label for="id_commentaire" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">
+              Commentaire
+            </label>
+            <textarea
+              id="id_commentaire"
+              name="commentaire"
+              class="textarea textarea-bordered w-full text-sm"
+              rows="3"
+              placeholder="Optionnel…">{{ commentaire|default_if_none:'' }}</textarea>
+          </div>
+        </div>
+
+        <div class="mt-4 flex items-center justify-end gap-2">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="toggleCreateExportForm(false)">Annuler</button>
+          <button type="submit" class="btn btn-primary btn-sm gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Valider
+          </button>
+        </div>
+      </form>
+
+      <div class="p-6">
+        <div class="overflow-x-auto">
+          <table class="table table-sm w-full text-sm">
+            <thead>
+              <tr class="text-xs text-base-content/40 uppercase tracking-wide bg-base-200/50 border-b border-base-200">
+                <th class="font-semibold whitespace-nowrap">Date demande</th>
+                <th class="font-semibold whitespace-nowrap">AGENT</th>
+                <th class="font-semibold whitespace-nowrap">FIN EXPORT</th>
+                <th class="font-semibold whitespace-nowrap">Statut</th>
+                <th class="font-semibold">FICHIER</th>
+                <th class="font-semibold">POIDS</th>
+                <th class="font-semibold text-center whitespace-nowrap">PARCELLES</th>
+                <th class="font-semibold text-center whitespace-nowrap">ALIGN.</th>
+                <th class="font-semibold text-center whitespace-nowrap">REGLES</th>
+                <th class="font-semibold text-center whitespace-nowrap">DETAILS</th>
+                <th class="font-semibold w-44 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for e in exports %}
+                <tr class="data-row border-b border-base-100 last:border-0">
+                  <td class="text-xs whitespace-nowrap text-base-content/60">
+                    {% if e.datetime_demande_export %}{{ e.datetime_demande_export|date:"d/m/Y H:i" }}{% else %}—{% endif %}
+                  </td>
+                  <td class="text-xs whitespace-nowrap font-mono text-base-content/60">{{ e.login_agent|default:"—" }}</td>
+                  <td class="text-xs whitespace-nowrap text-base-content/60">
+                    {% if e.datetime_fin_export %}{{ e.datetime_fin_export|date:"d/m/Y H:i" }}{% else %}—{% endif %}
+                  </td>
+                  <td class="text-xs whitespace-nowrap">
+                    {% if e.statut == 'EN COURS' %}
+                      <span class="badge badge-soft badge-info badge-sm">{{ e.get_statut_display|default:e.statut }}</span>
+                    {% elif e.statut == 'EN ERREUR' %}
+                      <span class="badge badge-soft badge-error badge-sm">{{ e.get_statut_display|default:e.statut }}</span>
+                    {% elif e.statut == 'TERMINE' %}
+                      <span class="badge badge-soft badge-success badge-sm">{{ e.get_statut_display|default:e.statut }}</span>
+                    {% elif e.statut == 'ARCHIVE SUPPRIMEE' %}
+                      <span class="badge badge-soft badge-success badge-sm">{{ e.get_statut_display|default:e.statut }}</span>
+                    {% else %}
+                      <span class="badge badge-soft badge-secondary badge-sm">{{ e.get_statut_display|default:e.statut }}</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-xs max-w-[12rem] text-base-content/60">
+                    {{ e.nom_du_fichier|default_if_none:"—"|truncatechars:40 }}
+                  </td>
+                  <td class="text-xs max-w-[10rem] text-base-content/60">
+                    {{ e.poids_du_fichier|default_if_none:"—"|truncatechars:40 }}
+                  </td>
+                  <td class="text-xs text-center tabular-nums text-base-content/70 whitespace-nowrap font-mono">{{ e.nombre_de_parcelles|default_if_none:"—" }}</td>
+                  <td class="text-xs text-center tabular-nums text-base-content/70 whitespace-nowrap font-mono">{{ e.nombre_d_alignements|default_if_none:"—" }}</td>
+                  <td class="text-xs text-center tabular-nums text-base-content/70 whitespace-nowrap font-mono">{{ e.nombre_de_regles|default_if_none:"—" }}</td>
+                  <td class="text-xs text-center tabular-nums text-base-content/70 whitespace-nowrap font-mono">{{ e.nombre_de_details|default_if_none:"—" }}</td>
+
+                  <td>
+                    <div class="flex w-full items-center justify-end gap-0.5">
+
+                      {# Commentaire (bouton action + tooltip uniquement si commentaire non vide) #}
+                      {% if e.commentaire and e.commentaire != '' %}
+                        <button
+                          type="button"
+                          class="btn btn-ghost btn-xs btn-square tooltip tooltip-left tooltip-primary inline-flex items-center justify-center"
+                          data-tip="{{ e.commentaire|escape }}"
+                          aria-label="Commentaire de l export">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40 hover:text-primary transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11h8m-7 6h6m-6 0-3-3m9 3 3-3M12 3l2 6-2 2-2-2 2-6z"/>
+                          </svg>
+                        </button>
+                      {% endif %}
+
+                      {# Télécharger #}
+                      {% if e.nom_du_fichier %}
+                        <a
+                          href="{% url 'backoffice:export_exports_internet' %}?download={{ e.pk }}"
+                          class="btn btn-ghost btn-xs btn-square tooltip tooltip-left inline-flex items-center justify-center"
+                          data-tip="Télécharger"
+                          aria-label="Télécharger le fichier de l export">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40 hover:text-primary transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
+                          </svg>
+                        </a>
+                      {% else %}
+                        <span class="btn btn-ghost btn-xs btn-square inline-flex items-center justify-center opacity-40" data-tip="Aucun fichier">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
+                          </svg>
+                        </span>
+                      {% endif %}
+
+                      {# Supprimer le Fichier #}
+                      <form method="post" action="{% url 'backoffice:export_exports_internet' %}" class="inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete_export_file" />
+                        <input type="hidden" name="export_pk" value="{{ e.pk }}" />
+                        <button
+                          type="submit"
+                          class="btn btn-ghost btn-xs btn-square tooltip tooltip-left inline-flex items-center justify-center {% if not e.nom_du_fichier %}opacity-40{% endif %}"
+                          data-tip="Supprimer le fichier"
+                          aria-label="Supprimer le fichier">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40 hover:text-error transition-colors {% if not e.nom_du_fichier %}pointer-events-none{% endif %}" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.5 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.5L14.5 3z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h8"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3v5h5"/>
+                          </svg>
+                        </button>
+                      </form>
+
+                      {# Supprimer la ligne #}
+                      <form method="post" action="{% url 'backoffice:export_exports_internet' %}" class="inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete_export_line" />
+                        <input type="hidden" name="export_pk" value="{{ e.pk }}" />
+                        <button
+                          type="submit"
+                          class="btn btn-ghost btn-xs btn-square tooltip tooltip-left inline-flex items-center justify-center"
+                          data-tip="Supprimer la ligne"
+                          aria-label="Supprimer l export">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40 hover:text-error transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3H5z"/>
+                          </svg>
+                        </button>
+                      </form>
+
+                    </div>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr class="data-row">
+                  <td colspan="11" class="text-center py-12 text-base-content/40 text-sm">
+                    Aucun export ne correspond aux critères.
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    var btnEl = document.getElementById('btn-create-export');
+    var formEl = document.getElementById('create-export-form');
+    var commentEl = document.getElementById('id_commentaire');
+    var initialBtnDisabled = !!(btnEl && btnEl.disabled);
+
+    window.toggleCreateExportForm = function (show) {
+      if (!btnEl || !formEl) return;
+      if (btnEl.disabled && show) return;
+      formEl.classList.toggle('hidden', !show);
+      // Quand le formulaire est ouvert, on évite un re-clique sur le bouton.
+      btnEl.disabled = !!show ? true : initialBtnDisabled;
+      if (!show && commentEl) commentEl.value = '';
+    };
+
+    // Assure un état cohérent au chargement.
+    if (btnEl && formEl && !formEl.classList.contains('hidden')) {
+      btnEl.disabled = true;
+    }
+  })();
+</script>
+{% endblock %}
+
