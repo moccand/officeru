@@ -1,0 +1,31 @@
+{% extends "backoffice/layouts/base.html" %}
+
+{% block page_title %}API — Swagger{% endblock %}
+
+{% block page_header %}
+  <div class="fade-in delay-1 mb-6 flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-base-content">Documentation API</h1>
+      <p class="text-sm text-base-content/40 mt-0.5">Spécification OpenAPI et paramètres d’accès.</p>
+    </div>
+  </div>
+{% endblock %}
+
+{% block content %}
+
+  <div role="tablist" class="tabs tabs-border mb-4 fade-in delay-1">
+    <a href="?onglet=swagger" role="tab" class="tab {% if onglet_actif == 'swagger' %}tab-active{% endif %}">Swagger</a>
+    <a href="?onglet=configuration" role="tab" class="tab {% if onglet_actif == 'configuration' %}tab-active{% endif %}">Configuration</a>
+  </div>
+
+  <div class="fade-in delay-2 w-full">
+    {% if onglet_actif == 'swagger' %}
+      <div class="rounded-box border border-base-200 bg-base-100 shadow-sm min-h-[280px]">
+      </div>
+    {% elif onglet_actif == 'configuration' %}
+      <div class="rounded-box border border-base-200 bg-base-100 shadow-sm min-h-[280px]">
+      </div>
+    {% endif %}
+  </div>
+
+{% endblock %}
