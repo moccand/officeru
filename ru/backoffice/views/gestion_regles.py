@@ -22,7 +22,7 @@ from django.urls import reverse
 from django.views import View
 from django.views.generic import ListView
 
-from core.models import RuDetailAlignement, RuRegle
+from core.models import RuDetail, RuDetailAlignement, RuRegle
 
 from ..forms import RuRegleForm
 from .base import _regle_breadcrumbs, get_menu_alerts

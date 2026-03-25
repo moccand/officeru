@@ -87,3 +87,4 @@ htmlcov/
 *.tmp
 
 /.venv_launch.bat
+/wheels/
