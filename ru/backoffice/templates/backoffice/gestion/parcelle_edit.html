@@ -44,6 +44,8 @@
       <form method="post" action="{% url 'backoffice:parcelle_edit' parcelle.pk %}?onglet=parcelle" novalidate>
         {% csrf_token %}
 
+        {% include "backoffice/partials/messages.html" %}
+
         {% if form.errors %}
           <div class="alert alert-error alert-soft mb-5 ru-form-summary-error">
             <svg xmlns="http://www.w3.org/2000/svg" class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -145,7 +147,29 @@
 
             <div class="ru-form-field md:col-span-2">
               <label for="id_valeur_detail" class="block text-xs font-semibold text-base-content/60 uppercase tracking-wide mb-1.5">Valeur</label>
-              <input type="text" id="id_valeur_detail" name="valeur" value="{{ add_detail_form.valeur.value|default:'' }}" class="input input-bordered w-full text-sm" placeholder="Valeur libre…" />
+              {% if add_detail_form.valeur.errors %}
+                <p class="text-xs text-error mb-1 ru-inline-error">{{ add_detail_form.valeur.errors|join:", " }}</p>
+              {% endif %}
+              <div class="space-y-2">
+                <input
+                  type="text"
+                  id="id_valeur_detail"
+                  name="valeur"
+                  value="{{ add_detail_form.valeur.value|default:'' }}"
+                  class="input input-bordered w-full text-sm"
+                  placeholder="Valeur libre…"
+                />
+                <select
+                  id="id_valeur_detail_select"
+                  name="valeur"
+                  class="select select-bordered w-full text-sm hidden"
+                  disabled
+                >
+                  <option value="">— Sélectionner —</option>
+                  <option value="test 1">test 1</option>
+                  <option value="test 2">test 2</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -267,6 +291,8 @@
   var regleSelectedInfoEl = document.getElementById('detail-regle-selected-info');
   var regleSelectedLabelEl = document.getElementById('detail-regle-selected-label');
   var regleSelectedCodesEl = document.getElementById('detail-regle-selected-codes');
+  var valeurInputEl = document.getElementById('id_valeur_detail');
+  var valeurSelectEl = document.getElementById('id_valeur_detail_select');
   var regleAcTimer = null;
   var regleSuggestionsData = [];
   var regleActiveIndex = -1;
@@ -281,8 +307,43 @@
       }, 0);
     } else {
       clearDetailRegle();
-      var valeur = document.getElementById('id_valeur_detail');
-      if (valeur) valeur.value = '';
+      if (valeurInputEl) valeurInputEl.value = '';
+      if (valeurSelectEl) {
+        valeurSelectEl.value = '';
+        valeurSelectEl.disabled = true;
+        valeurSelectEl.classList.add('hidden');
+      }
+      updateValeurUI('SAISIE LIBRE');
+    }
+  }
+
+  function updateValeurUI(typeValeur) {
+    var t = typeValeur || 'SAISIE LIBRE';
+
+    // Valeur libre => input activé, select masqué/désactivé
+    if (valeurInputEl) {
+      if (t === 'PAS DE VALEUR') {
+        valeurInputEl.disabled = true;
+      } else if (t === 'SAISIE LIBRE') {
+        valeurInputEl.disabled = false;
+      } else if (t === 'LISTE FIXE') {
+        valeurInputEl.disabled = true;
+      } else {
+        valeurInputEl.disabled = false;
+      }
+    }
+
+    if (valeurSelectEl) {
+      if (t === 'LISTE FIXE') {
+        valeurSelectEl.disabled = false;
+        valeurSelectEl.classList.remove('hidden');
+        valeurSelectEl.required = true;
+      } else {
+        valeurSelectEl.disabled = true;
+        valeurSelectEl.classList.add('hidden');
+        valeurSelectEl.required = false;
+        valeurSelectEl.value = '';
+      }
     }
   }
 
@@ -297,6 +358,8 @@
     if (regleSelectedInfoEl) regleSelectedInfoEl.classList.add('hidden');
     regleSuggestionsData = [];
     regleActiveIndex = -1;
+    if (valeurInputEl) valeurInputEl.value = '';
+    updateValeurUI('SAISIE LIBRE');
   }
 
   function selectDetailRegle(item) {
@@ -307,6 +370,10 @@
     regleSelectedInfoEl.classList.remove('hidden');
     regleClearEl.classList.remove('hidden');
     regleSuggestionsEl.classList.add('hidden');
+
+    updateValeurUI(item.type_valeur || 'PAS DE VALEUR');
+    if (valeurInputEl) valeurInputEl.value = '';
+    if (valeurSelectEl) valeurSelectEl.value = '';
   }
 
   function renderDetailRegleSuggestions(items) {
@@ -331,7 +398,8 @@
         selectDetailRegle({
           id: item.id,
           label: item.label || '',
-          codes: item.codes || ''
+          codes: item.codes || '',
+          type_valeur: item.type_valeur || 'PAS DE VALEUR'
         });
       });
       regleSuggestionsEl.appendChild(btn);
@@ -372,6 +440,8 @@
       regleHiddenEl.value = '';
       regleSelectedInfoEl.classList.add('hidden');
       regleClearEl.classList.toggle('hidden', !regleSearchEl.value);
+      if (valeurInputEl) valeurInputEl.value = '';
+      updateValeurUI('SAISIE LIBRE');
       clearTimeout(regleAcTimer);
       regleAcTimer = setTimeout(function () { fetchDetailRegles(regleSearchEl.value.trim()); }, 180);
     });
@@ -403,7 +473,8 @@
           selectDetailRegle({
             id: regleSuggestionsData[regleActiveIndex].id,
             label: regleSuggestionsData[regleActiveIndex].label || '',
-            codes: regleSuggestionsData[regleActiveIndex].codes || ''
+            codes: regleSuggestionsData[regleActiveIndex].codes || '',
+            type_valeur: regleSuggestionsData[regleActiveIndex].type_valeur || 'PAS DE VALEUR'
           });
         }
       } else if (e.key === 'Escape') {
@@ -446,6 +517,21 @@
         regleSelectedCodesEl.textContent = '';
         regleSelectedInfoEl.classList.remove('hidden');
         regleClearEl.classList.remove('hidden');
+      }
+
+      if (regleHiddenEl.value) {
+        fetch("{% url 'backoffice:regle_type_valeur' %}?id_regle=" + encodeURIComponent(regleHiddenEl.value))
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            var t = (data && data.type_valeur) ? data.type_valeur : 'PAS DE VALEUR';
+            updateValeurUI(t);
+            if (valeurSelectEl && valeurInputEl) {
+              valeurSelectEl.value = valeurInputEl.value;
+            }
+          })
+          .catch(function () {
+            updateValeurUI('PAS DE VALEUR');
+          });
       }
     }
   })();

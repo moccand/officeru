@@ -94,6 +94,73 @@ class GestionVoiesView(ListView):
         ctx['menu_alerts'] = get_menu_alerts(self.request)
         return ctx
 
+    def post(self, request, *args, **kwargs):
+        action = (request.POST.get('bulk_action') or '').strip()
+        raw_ids = request.POST.getlist('selected_ids')
+        selected_ids = [i for i in raw_ids if i]
+
+        if not selected_ids:
+            messages.error(request, "Aucune voie sélectionnée.", extra_tags='quick-dismiss')
+            return redirect('backoffice:gestion_voies')
+
+        voies = RuVoie.objects.filter(pk__in=selected_ids)
+        if not voies.exists():
+            messages.error(request, "La sélection ne contient aucune voie valide.", extra_tags='quick-dismiss')
+            return redirect('backoffice:gestion_voies')
+
+        if action == 'set_voie_privee_oui':
+            updated = 0
+            for voie in voies:
+                voie.voie_privee = True
+                voie.save()
+                updated += 1
+            messages.success(
+                request,
+                f"{updated} voie(s) marquée(s) comme privée(s).",
+                extra_tags='quick-dismiss'
+            )
+            return redirect('backoffice:gestion_voies')
+
+        if action == 'set_voie_privee_non':
+            updated = 0
+            for voie in voies:
+                voie.voie_privee = False
+                voie.save()
+                updated += 1
+            messages.success(
+                request,
+                f"{updated} voie(s) marquée(s) comme non privée(s).",
+                extra_tags='quick-dismiss'
+            )
+            return redirect('backoffice:gestion_voies')
+
+        if action == 'delete_selected':
+            blocked_count = 0
+            deletable = []
+            for voie in voies:
+                if voie.alignements.exists():
+                    blocked_count += 1
+                else:
+                    deletable.append(voie)
+
+            deleted_count = 0
+            for voie in deletable:
+                voie.delete()
+                deleted_count += 1
+
+            if deleted_count:
+                messages.success(request, f"{deleted_count} voie(s) supprimée(s).", extra_tags='quick-dismiss')
+            if blocked_count:
+                messages.error(
+                    request,
+                    f"{blocked_count} voie(s) non supprimée(s) car des alignements sont liés.",
+                    extra_tags='quick-dismiss'
+                )
+            return redirect('backoffice:gestion_voies')
+
+        messages.error(request, "Action groupée inconnue.", extra_tags='quick-dismiss')
+        return redirect('backoffice:gestion_voies')
+
 
 class GestionVoieEditView(View):
     template_name = 'backoffice/gestion/voie_edit.html'

@@ -137,7 +137,7 @@ class RuRegleForm(RuModelFormMixin, forms.ModelForm):
     class Meta:
         model = RuRegle
         fields = [
-            'code', 'type_regle', 'libelle', 'doc_urba', 'autorite', 'url_doc',
+            'code', 'type_regle', 'type_valeur', 'libelle', 'doc_urba', 'autorite', 'url_doc',
             'standard_cnig', 'type_cnig', 'code_cnig', 'sous_code_cnig',
             'cible', 'phrase_chatbot', 'type_cartads',
         ]
@@ -253,6 +253,26 @@ class RuDetailParcelleAddForm(forms.Form):
             raise forms.ValidationError("Veuillez sélectionner une règle via l'autocomplétion.")
         return regle_id
 
+    def clean_valeur(self):
+        """
+        Rendu serveur du comportement côté UI selon `RuRegle.type_valeur`.
+        - PAS DE VALEUR => valeur ignorée
+        - SAISIE LIBRE => valeur acceptée (optionnelle)
+        - LISTE FIXE => valeur obligatoire (sélection non vide)
+        """
+        regle_id = self.cleaned_data.get('id_regle')
+        valeur = self.cleaned_data.get('valeur') or ''
+
+        type_valeur = RuRegle.objects.filter(pk=regle_id).values_list('type_valeur', flat=True).first()
+        if type_valeur == RuRegle.TypeValeur.PAS_DE_VALEUR:
+            return ''
+        if type_valeur == RuRegle.TypeValeur.LISTE_FIXE:
+            if not (valeur or '').strip():
+                raise forms.ValidationError("Veuillez sélectionner une valeur dans la liste.")
+            return valeur.strip()
+        # SAISIE_LIBRE (ou valeur inconnue) : on laisse passer
+        return (valeur or '').strip()
+
 
 class RuDetailAlignementAddForm(forms.Form):
     """Ajout de RuDetailAlignement depuis l'onglet « Règles sur l'alignement »."""
@@ -286,6 +306,19 @@ class RuDetailAlignementAddForm(forms.Form):
         if not exists:
             raise forms.ValidationError("Veuillez sélectionner une règle via l'autocomplétion.")
         return regle_id
+
+    def clean_valeur(self):
+        regle_id = self.cleaned_data.get('id_regle')
+        valeur = self.cleaned_data.get('valeur') or ''
+
+        type_valeur = RuRegle.objects.filter(pk=regle_id).values_list('type_valeur', flat=True).first()
+        if type_valeur == RuRegle.TypeValeur.PAS_DE_VALEUR:
+            return ''
+        if type_valeur == RuRegle.TypeValeur.LISTE_FIXE:
+            if not (valeur or '').strip():
+                raise forms.ValidationError("Veuillez sélectionner une valeur dans la liste.")
+            return valeur.strip()
+        return (valeur or '').strip()
 
 
 # ═══════════════════════════════════════════════════════════

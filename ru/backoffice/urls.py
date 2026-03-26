@@ -111,6 +111,17 @@ urlpatterns = [
          views.RegleSupprimerView.as_view(),
          name='regle_supprimer'),
 
+    # Valeurs (SAISIE_LIBRE)
+    path('gestion/regles/<int:pk>/valeurs-analyse/',
+         views.RegleValeursAnalyseView.as_view(),
+         name='regle_valeurs_analyse'),
+    path('gestion/regles/<int:pk>/valeurs-supprimer/',
+         views.RegleValeursSupprimerView.as_view(),
+         name='regle_valeurs_supprimer'),
+    path('api/regle-type-valeur/',
+         views.RegleTypeValeurByIdView.as_view(),
+         name='regle_type_valeur'),
+
     path('gestion/gestion-avancee/',
          views.GestionAvanceeView.as_view(),
          name='gestion_avancee'),

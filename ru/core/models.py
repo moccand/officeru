@@ -168,6 +168,11 @@ class RuRegle(models.Model):
         PARCELLE = 'PARCELLE', 'Parcelle'
         ALIGNEMENT = 'ALIGNEMENT', 'Alignement'
 
+    class TypeValeur(models.TextChoices):
+        PAS_DE_VALEUR = 'PAS DE VALEUR', 'PAS DE VALEUR'
+        LISTE_FIXE = 'LISTE FIXE', 'LISTE FIXE'
+        SAISIE_LIBRE = 'SAISIE LIBRE', 'SAISIE LIBRE'
+
     id_regle = models.IntegerField(primary_key=True)
     code = models.CharField(max_length=50, default='')
     type_regle = models.CharField(
@@ -176,6 +181,15 @@ class RuRegle(models.Model):
         null=False,
         blank=False,
         default=TypeRegle.PARCELLE,
+    )
+
+    type_valeur = models.CharField(
+        max_length=30,
+        choices=TypeValeur.choices,
+        null=False,
+        blank=False,
+        default=TypeValeur.PAS_DE_VALEUR,
+        verbose_name='Type de valeur',
     )
     libelle = models.TextField(null=True, blank=True)
     doc_urba = models.CharField(max_length=50, default='', blank=True)
@@ -189,7 +203,9 @@ class RuRegle(models.Model):
     date_creation = models.DateField(null=True, blank=True)
     date_modification = models.DateField(null=True, blank=True)
     phrase_chatbot = models.TextField(null=True, blank=True)
-    type_cartads = models.CharField(max_length=5, null=True, blank=True)
+    type_cartads = models.CharField(max_length=5, null=True, blank=True
+
+                                    )
 
     class Meta:
         db_table = 'ru_regle'

@@ -30,12 +30,14 @@
       </svg>
       Règle
     </a>
-    <a href="?onglet=valeurs" role="tab" class="tab {% if onglet_actif == 'valeurs' %}tab-active{% endif %} gap-2">
-      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
-      </svg>
-      Valeurs
-    </a>
+    {% if regle.type_valeur != 'PAS DE VALEUR' %}
+      <a href="?onglet=valeurs" role="tab" class="tab {% if onglet_actif == 'valeurs' %}tab-active{% endif %} gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+        </svg>
+        Valeurs
+      </a>
+    {% endif %}
   </div>
 
   <div class="fade-in delay-2 w-full">
@@ -44,6 +46,8 @@
 
       <form method="post" action="{% url 'backoffice:regle_edit' regle.pk %}?onglet=regle" novalidate>
         {% csrf_token %}
+
+        {% include "backoffice/partials/messages.html" %}
 
         {% if form.errors %}
           <div class="alert alert-error alert-soft mb-5 ru-form-summary-error">
@@ -83,17 +87,430 @@
 
     {% elif onglet_actif == 'valeurs' %}
 
-      <div class="card bg-base-100 border border-base-200 shadow-sm">
-        <div class="px-6 py-4 border-b border-base-200">
-          <p class="text-sm font-semibold text-base-content">Valeurs</p>
+      {% if regle.type_valeur == 'SAISIE LIBRE' %}
+        <div class="card bg-base-100 border border-base-200 shadow-sm">
+          <div class="px-6 py-4 border-b border-base-200 flex items-center justify-between gap-3">
+            <div>
+              <p class="text-sm font-semibold text-base-content">Valeurs</p>
+              <p class="text-xs text-base-content/40 mt-0.5">
+                Analyse des valeurs existantes (Rudetail + RudetailAlignement).
+              </p>
+            </div>
+
+            <button type="button" id="btn-analyser-valeurs" class="btn btn-primary btn-sm gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6a2 2 0 012-2h2a2 2 0 012 2v13m-6 0h6m-7 4h8"/>
+              </svg>
+              Analyser les valeurs
+            </button>
+          </div>
+
+          <div class="p-6">
+            {% include "backoffice/partials/messages.html" %}
+            <div id="valeurs-status" class="text-sm text-base-content/60">
+              Cliquez sur <span class="font-medium text-base-content">Analyser les valeurs</span> pour remplir le tableau.
+            </div>
+
+            <form id="valeurs-bulk-form" method="post" action="{% url 'backoffice:regle_valeurs_supprimer' regle.pk %}" class="mt-4">
+              {% csrf_token %}
+
+              <div id="valeurs-bulk-bar" class="px-5 py-3 border-y border-base-200 bg-base-100/70 flex flex-wrap items-center gap-2">
+                <span class="text-xs text-base-content/50">Actions groupées</span>
+                <div class="flex items-center gap-2">
+                  <select class="select select-bordered select-sm w-56 text-sm" disabled>
+                    <option>Supprimer la sélection</option>
+                  </select>
+                  <button type="button" id="btn-valeurs-bulk-launch" class="btn btn-primary btn-sm" disabled>
+                    Lancer
+                  </button>
+                </div>
+                <span id="valeurs-selected-count" class="text-xs text-base-content/40 ml-auto">0 sélection</span>
+                <span class="text-xs text-base-content/40">impact <span id="valeurs-selected-nb" class="font-semibold text-base-content/70">0</span> détail(s)</span>
+              </div>
+
+              <div id="valeurs-table-holder" class="overflow-x-auto mt-3"></div>
+
+              <div id="valeurs-pagination" class="px-5 py-3 border-t border-base-200 flex flex-col sm:flex-row items-center justify-between gap-3 mt-2">
+                <div class="flex items-center gap-2 text-xs text-base-content/40">
+                  <span id="valeurs-pagination-count">Aucun résultat</span>
+                  <span>·</span>
+                  <span>Lignes par page</span>
+                  <select id="valeurs-per-page" class="select select-bordered select-xs w-20">
+                    <option value="25" selected>25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                  </select>
+                </div>
+                <div id="valeurs-pagination-buttons" class="flex items-center gap-1 flex-wrap"></div>
+              </div>
+            </form>
+
+            <dialog id="modal-bulk-valeurs" class="modal" aria-labelledby="modal-bulk-valeurs-title">
+              <div class="modal-box max-w-2xl">
+                <form method="dialog">
+                  <button type="submit" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="Fermer">✕</button>
+                </form>
+                <h3 id="modal-bulk-valeurs-title" class="font-bold text-base">Confirmer la suppression</h3>
+
+                <div class="mt-4 rounded-lg border border-base-200 bg-base-200/30 px-4 py-3 text-sm">
+                  <p class="text-base-content/80">
+                    <span class="font-semibold">Action :</span> Supprimer la sélection
+                  </p>
+                  <p class="text-base-content/70 mt-1">
+                    <span class="font-semibold">Type d'objet :</span> Valeur de règle
+                  </p>
+                  <p class="text-base-content/70 mt-1">
+                    <span class="font-semibold">Nombre d'objets sélectionnés :</span>
+                    <span id="modal-bulk-valeurs-count">0</span>
+                  </p>
+                </div>
+
+                <div class="mt-4">
+                  <p class="text-sm font-semibold text-base-content">Impact prévisible</p>
+                  <ul id="modal-bulk-valeurs-impact" class="mt-2 text-sm text-base-content/70 list-disc pl-5 space-y-1">
+                  </ul>
+                </div>
+                <div class="modal-action">
+                  <form method="dialog">
+                    <button type="submit" class="btn btn-ghost btn-sm">Annuler</button>
+                  </form>
+                  <button type="submit" form="valeurs-bulk-form" class="btn btn-primary btn-sm">Confirmer</button>
+                </div>
+              </div>
+              <form method="dialog" class="modal-backdrop"><button type="submit">Fermer</button></form>
+            </dialog>
+          </div>
         </div>
-        <div class="p-6 text-sm text-base-content/60">
-          Page pour gérer plus tard des listes de valeurs propres à chaque règle.
+
+      {% elif regle.type_valeur == 'LISTE FIXE' %}
+        <div class="card bg-base-100 border border-base-200 shadow-sm">
+          <div class="px-6 py-4 border-b border-base-200">
+            <p class="text-sm font-semibold text-base-content">Valeurs</p>
+          </div>
+          <div class="p-6 text-sm text-base-content/60">
+            Gestion des listes fixes à implémenter plus tard.
+          </div>
         </div>
-      </div>
+
+      {% else %}
+        <div class="card bg-base-100 border border-base-200 shadow-sm">
+          <div class="px-6 py-4 border-b border-base-200">
+            <p class="text-sm font-semibold text-base-content">Valeurs</p>
+          </div>
+          <div class="p-6 text-sm text-base-content/60">
+            Cette règle ne nécessite pas de gestion des valeurs.
+          </div>
+        </div>
+      {% endif %}
 
     {% endif %}
 
   </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    var btnAnalyseEl = document.getElementById('btn-analyser-valeurs');
+    var statusEl = document.getElementById('valeurs-status');
+    var bulkFormEl = document.getElementById('valeurs-bulk-form');
+    var bulkBarEl = document.getElementById('valeurs-bulk-bar');
+    var tableHolderEl = document.getElementById('valeurs-table-holder');
+    var btnLaunchEl = document.getElementById('btn-valeurs-bulk-launch');
+    var selectedCountEl = document.getElementById('valeurs-selected-count');
+    var selectedNbEl = document.getElementById('valeurs-selected-nb');
+    var perPageEl = document.getElementById('valeurs-per-page');
+    var paginationCountEl = document.getElementById('valeurs-pagination-count');
+    var paginationButtonsEl = document.getElementById('valeurs-pagination-buttons');
+
+    var modalEl = document.getElementById('modal-bulk-valeurs');
+    var modalCountEl = document.getElementById('modal-bulk-valeurs-count');
+    var modalImpactEl = document.getElementById('modal-bulk-valeurs-impact');
+
+    if (!btnAnalyseEl || !tableHolderEl || !bulkFormEl) return;
+
+    var currentPage = 1;
+    var currentPerPage = 25;
+    var totalPages = 1;
+    var totalCount = 0;
+    var currentSort = 'valeur';
+    var currentDir = 'asc';
+
+    function setBulkState() {
+      var checked = tableHolderEl.querySelectorAll('.valeur-select-checkbox:checked');
+      var count = checked.length;
+      var totalNb = 0;
+      checked.forEach(function (c) {
+        totalNb += parseInt(c.dataset.nb || '0', 10);
+      });
+
+      // Mêmes règles UI que `voies.html` : checked / indeterminate
+      var items = tableHolderEl.querySelectorAll('.valeur-select-checkbox');
+      var totalItems = items ? items.length : 0;
+      var checkAll = tableHolderEl.querySelector('#check-all-valeurs');
+      if (checkAll) {
+        if (totalItems === 0 || count === 0) {
+          checkAll.checked = false;
+          checkAll.indeterminate = false;
+        } else if (count === totalItems) {
+          checkAll.checked = true;
+          checkAll.indeterminate = false;
+        } else {
+          checkAll.checked = false;
+          checkAll.indeterminate = true;
+        }
+      }
+
+      if (selectedCountEl) {
+        selectedCountEl.textContent = count + ' sélection' + (count > 1 ? 's' : '');
+      }
+      if (selectedNbEl) selectedNbEl.textContent = String(totalNb);
+      if (btnLaunchEl) btnLaunchEl.disabled = count === 0;
+    }
+
+    function updatePaginationUi(meta) {
+      var p = meta || {};
+      currentPage = p.page || 1;
+      currentPerPage = p.per_page || currentPerPage;
+      totalPages = p.num_pages || 1;
+      totalCount = p.total_count || 0;
+      if (perPageEl) perPageEl.value = String(currentPerPage);
+
+      if (paginationCountEl) {
+        if (!totalCount) {
+          paginationCountEl.textContent = 'Aucun résultat';
+        } else {
+          var start = ((currentPage - 1) * currentPerPage) + 1;
+          var end = Math.min(currentPage * currentPerPage, totalCount);
+          paginationCountEl.textContent = start + '–' + end + ' sur ' + totalCount + ' résultats';
+        }
+      }
+
+      if (!paginationButtonsEl) return;
+      paginationButtonsEl.innerHTML = '';
+
+      function mkBtn(label, page, disabled, active) {
+        var b = document.createElement(disabled ? 'button' : 'button');
+        b.type = 'button';
+        b.className = active ? 'btn btn-xs btn-primary' : 'btn btn-xs btn-ghost';
+        if (disabled) {
+          b.disabled = true;
+          b.classList.add('opacity-30');
+        } else {
+          b.addEventListener('click', function () { analyseValeurs(page); });
+        }
+        b.textContent = label;
+        paginationButtonsEl.appendChild(b);
+      }
+
+      var hasPrev = !!p.has_previous;
+      var hasNext = !!p.has_next;
+      mkBtn('«', 1, !hasPrev, false);
+      mkBtn('‹', currentPage - 1, !hasPrev, false);
+      for (var i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+        mkBtn(String(i), i, false, i === currentPage);
+      }
+      mkBtn('›', currentPage + 1, !hasNext, false);
+      mkBtn('»', totalPages, !hasNext, false);
+    }
+
+    function buildTable(rows, emptyMessage) {
+      tableHolderEl.innerHTML = '';
+      bulkFormEl.classList.remove('hidden');
+      if (statusEl) statusEl.textContent = '';
+
+      function esc(s) {
+        return String(s === null || s === undefined ? '' : s)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function sortIndicator(col) {
+        if (currentSort !== col) return '';
+        return currentDir === 'asc' ? ' ▲' : ' ▼';
+      }
+
+      var header = `
+        <table class="table table-sm w-full text-sm">
+          <thead>
+            <tr class="text-xs text-base-content/40 uppercase tracking-wide bg-base-200/50 border-b border-base-200">
+              <th class="font-semibold text-center w-10">
+                <input id="check-all-valeurs" type="checkbox" class="checkbox checkbox-xs" aria-label="Tout sélectionner" />
+              </th>
+              <th class="font-semibold whitespace-nowrap">
+                <button type="button" id="sort-valeur-btn" class="btn btn-ghost btn-xs normal-case px-1 min-h-0 h-auto">Valeur${sortIndicator('valeur')}</button>
+              </th>
+              <th class="font-semibold w-28 text-center">
+                <button type="button" id="sort-impact-btn" class="btn btn-ghost btn-xs normal-case px-1 min-h-0 h-auto">Impact${sortIndicator('impact')}</button>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      var body = (rows || []).map(function (r) {
+        var key = r.key || '';
+        var valeur = (r.valeur === null || r.valeur === undefined) ? '' : String(r.valeur);
+        var valeurAffiche = (r.valeur_affiche === null || r.valeur_affiche === undefined)
+          ? valeur
+          : String(r.valeur_affiche);
+        var nb = r.nb_details || 0;
+        return `
+          <tr class="data-row border-b border-base-100 last:border-0">
+            <td class="text-center">
+              <input
+                type="checkbox"
+                name="selected_keys"
+                value="${key.replace(/"/g, '&quot;')}"
+                class="valeur-select-checkbox checkbox checkbox-xs"
+                data-nb="${nb}"
+                aria-label="Sélectionner valeur ${valeurAffiche}"
+              />
+            </td>
+            <td class="font-medium text-base-content">${esc(valeurAffiche)}</td>
+            <td class="text-center text-base-content/70 text-xs">${nb}</td>
+          </tr>
+        `;
+      }).join('');
+
+      if (!rows || !rows.length) {
+        body = `
+          <tr class="data-row border-b border-base-100 last:border-0">
+            <td colspan="3" class="text-center py-12 text-base-content/30 text-sm">
+              ${esc(emptyMessage || 'Aucune valeur trouvée pour cette règle.')}
+            </td>
+          </tr>
+        `;
+      }
+
+      var footer = `
+          </tbody>
+        </table>
+      `;
+
+      tableHolderEl.innerHTML = header + body + footer;
+
+      var checkAll = tableHolderEl.querySelector('#check-all-valeurs');
+      if (checkAll) {
+        checkAll.checked = false;
+        checkAll.indeterminate = false;
+        checkAll.disabled = !rows || !rows.length;
+      }
+
+      setBulkState();
+      var cbList = tableHolderEl.querySelectorAll('.valeur-select-checkbox');
+      cbList.forEach(function (cb) {
+        cb.addEventListener('change', setBulkState);
+      });
+
+      if (checkAll) {
+        checkAll.addEventListener('change', function () {
+          cbList.forEach(function (cb) { cb.checked = checkAll.checked; });
+          setBulkState();
+        });
+      }
+
+      var sortValeurBtn = tableHolderEl.querySelector('#sort-valeur-btn');
+      var sortImpactBtn = tableHolderEl.querySelector('#sort-impact-btn');
+      function toggleSort(col) {
+        if (currentSort === col) {
+          currentDir = (currentDir === 'asc') ? 'desc' : 'asc';
+        } else {
+          currentSort = col;
+          currentDir = 'asc';
+        }
+        analyseValeurs(1);
+      }
+      if (sortValeurBtn) sortValeurBtn.addEventListener('click', function () { toggleSort('valeur'); });
+      if (sortImpactBtn) sortImpactBtn.addEventListener('click', function () { toggleSort('impact'); });
+    }
+
+    function analyseValeurs(page) {
+      btnAnalyseEl.disabled = true;
+      if (statusEl) statusEl.textContent = 'Analyse en cours…';
+
+      var targetPage = page || currentPage || 1;
+
+      fetch("{% url 'backoffice:regle_valeurs_analyse' regle.pk %}?page=" + encodeURIComponent(targetPage) + "&per_page=" + encodeURIComponent(currentPerPage) + "&sort=" + encodeURIComponent(currentSort) + "&dir=" + encodeURIComponent(currentDir))
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data && data.disabled) {
+            statusEl.textContent = 'Cette règle ne gère pas de saisie libre.';
+            bulkFormEl.classList.add('hidden');
+            return;
+          }
+          currentSort = (data && data.sort) ? data.sort : currentSort;
+          currentDir = (data && data.dir) ? data.dir : currentDir;
+          buildTable((data && data.rows) || [], 'Aucune valeur trouvée pour cette règle.');
+          updatePaginationUi((data && data.pagination) || {});
+        })
+        .catch(function () {
+          if (statusEl) statusEl.textContent = 'Erreur lors de l’analyse des valeurs.';
+        })
+        .finally(function () {
+          btnAnalyseEl.disabled = false;
+        });
+    }
+
+    if (btnAnalyseEl) {
+      btnAnalyseEl.addEventListener('click', function () {
+        currentPage = 1;
+        analyseValeurs(1);
+      });
+    }
+
+    // Affiche la structure du tableau immédiatement.
+    // Si la page revient d'une action groupée (?analyze=1), on charge directement.
+    var shouldAutoAnalyze = false;
+    try {
+      var qs = new URLSearchParams(window.location.search || '');
+      shouldAutoAnalyze = (qs.get('analyze') === '1');
+    } catch (e) {
+      shouldAutoAnalyze = false;
+    }
+
+    if (shouldAutoAnalyze) {
+      analyseValeurs(1);
+    } else {
+      buildTable([], 'Cliquez sur "Analyser les valeurs" pour charger les résultats.');
+      updatePaginationUi({
+        page: 1,
+        per_page: currentPerPage,
+        num_pages: 1,
+        total_count: 0,
+        has_previous: false,
+        has_next: false
+      });
+    }
+
+    if (perPageEl) {
+      perPageEl.addEventListener('change', function () {
+        var v = this.value;
+        currentPerPage = (v === '50' || v === '100') ? parseInt(v, 10) : 25;
+        currentPage = 1;
+        analyseValeurs(1);
+      });
+    }
+
+    if (btnLaunchEl && modalEl) {
+      btnLaunchEl.addEventListener('click', function () {
+        var checked = tableHolderEl.querySelectorAll('.valeur-select-checkbox:checked');
+        var count = checked.length;
+        var totalNb = 0;
+        checked.forEach(function (c) {
+          totalNb += parseInt(c.dataset.nb || '0', 10);
+        });
+        if (modalCountEl) modalCountEl.textContent = String(count);
+        if (modalImpactEl) {
+          modalImpactEl.innerHTML = '<li>' + totalNb + ' détail(s) seront supprimés.</li>';
+        }
+        modalEl.showModal();
+      });
+    }
+  })();
+</script>
 {% endblock %}

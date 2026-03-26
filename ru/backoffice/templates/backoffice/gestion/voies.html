@@ -9,29 +9,7 @@
 
 {% block content %}
 
-{% if messages %}
-  <div id="messages-container" class="space-y-2 mb-4 fade-in">
-    {% for message in messages %}
-      <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %} alert-soft flex items-center justify-between gap-3">
-        <div class="flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            {% if message.tags == 'error' %}
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-            {% else %}
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            {% endif %}
-          </svg>
-          <span class="text-sm">{{ message }}</span>
-        </div>
-        <button onclick="fermerMessage(this)" class="btn btn-ghost btn-xs btn-circle shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-        </button>
-      </div>
-    {% endfor %}
-  </div>
-{% endif %}
+{% include "backoffice/partials/messages.html" %}
 
 
   <div class="fade-in delay-1 card bg-base-100 border border-base-200 shadow-sm">
@@ -81,87 +59,117 @@
       </div>
     </form>
 
-    {% include "backoffice/partials/pagination.html" with page_obj=page_obj %}
+    <form id="bulk-voies-form" method="post" action="{% url 'backoffice:gestion_voies' %}">
+      {% csrf_token %}
 
-    <div class="overflow-x-auto">
-      <table class="table table-sm w-full text-sm">
-        <thead>
-          <tr class="text-xs text-base-content/40 uppercase tracking-wide bg-base-200/50 border-b border-base-200">
-            {% include "backoffice/partials/sortable_th.html" with col="libelle_long"     label="Libellé long" %}
-            {% include "backoffice/partials/sortable_th.html" with col="code_voie_ville"  label="Code ville" %}
-            {% include "backoffice/partials/sortable_th.html" with col="code_voie_rivoli" label="Code Rivoli" %}
-            {% include "backoffice/partials/sortable_th.html" with col="voie_privee"      label="Voie privée" %}
-            {% include "backoffice/partials/sortable_th.html" with col="nb_alignements" label="Alignements" %}
-            {% include "backoffice/partials/sortable_th.html" with col="date_creation" label="Création" %}
-            {% include "backoffice/partials/sortable_th.html" with col="date_modification" label="Modification" %}
-            <th class="font-semibold text-center w-28">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for v in voies %}
-            <tr class="data-row border-b border-base-100 last:border-0">
-              <td class="font-medium text-base-content">{{ v.libelle_long|default:"—" }}</td>
-              <td class="text-base-content/70 text-xs">{{ v.code_voie_ville|default:"—" }}</td>
-              <td class="text-base-content/70 text-xs">{{ v.code_voie_rivoli|default:"—" }}</td>
-              <td>
-                {% if v.voie_privee %}
-                  <span class="badge badge-warning badge-soft badge-sm">Oui</span>
-                {% else %}
-                  <span class="badge badge-ghost badge-sm">Non</span>
-                {% endif %}
-              </td>
-              <td class="text-center">
-                {% if v.nb_alignements > 0 %}
-                  <a href="{% url 'backoffice:gestion_alignements' %}?voie={{ v.pk }}"
-                    class="badge badge-primary badge-soft badge-sm hover:badge-primary transition-colors"
-                    aria-label="{{ v.nb_alignements }} alignement{{ v.nb_alignements|pluralize }} pour la voie {{ v.libelle_long }}">
-                    {{ v.nb_alignements }}
-                  </a>
-                {% else %}
-                  <span class="text-base-content/30 text-xs">—</span>
-                {% endif %}
-              </td>
-              <td class="text-base-content/60 text-xs whitespace-nowrap">
-                {% if v.date_creation %}{{ v.date_creation|date:"d/m/Y" }}{% else %}—{% endif %}
-              </td>
-              <td class="text-base-content/60 text-xs whitespace-nowrap">
-                {% if v.date_modification %}{{ v.date_modification|date:"d/m/Y" }}{% else %}—{% endif %}
-              </td>
-              <td>
-                <div class="flex items-center justify-center gap-0.5">
+      <div class="px-5 py-3 border-y border-base-200 bg-base-100/70 flex flex-wrap items-center gap-2">
+        <span class="text-xs text-base-content/50">Actions groupées</span>
+        <select id="bulk_action" name="bulk_action" class="select select-bordered select-sm w-56 text-sm">
+          <option value="">Choisir une action…</option>
+          <option value="set_voie_privee_oui">Marquer privée</option>
+          <option value="set_voie_privee_non">Marquer non privée</option>
+          <option value="delete_selected">Supprimer la sélection</option>
+        </select>
+        <button id="bulk_submit_btn" type="button" class="btn btn-primary btn-sm" disabled>Lancer</button>
+        <span id="bulk_selected_count" class="text-xs text-base-content/40 ml-auto">0 sélection</span>
+      </div>
 
-                  <a href="{% url 'backoffice:gestion_voie_edit' v.pk %}"
-                    class="btn btn-ghost btn-xs btn-square tooltip tooltip-left inline-flex items-center justify-center"
-                     data-tip="Éditer"
-                     aria-label="Éditer la voie {{ v.libelle_long|default:v.pk }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40 hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                    </svg>
-                  </a>
+      {% include "backoffice/partials/pagination.html" with page_obj=page_obj %}
 
-                  <button
-                    onclick="confirmerSuppression({{ v.pk }}, '{{ v.libelle_long|default:v.pk|escapejs }}')"
-                    class="btn btn-ghost btn-xs btn-square tooltip tooltip-left inline-flex items-center justify-center"
-                    data-tip="Supprimer"
-                    aria-label="Supprimer la voie {{ v.libelle_long|default:v.pk }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40 hover:text-error transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                    </svg>
-                  </button>
-
-                </div>
-              </td>
+      <div class="overflow-x-auto">
+        <table class="table table-sm w-full text-sm">
+          <thead>
+            <tr class="text-xs text-base-content/40 uppercase tracking-wide bg-base-200/50 border-b border-base-200">
+              <th class="w-10 text-center">
+                <input id="check-all-voies" type="checkbox" class="checkbox checkbox-xs" aria-label="Tout sélectionner" />
+              </th>
+              {% include "backoffice/partials/sortable_th.html" with col="libelle_long"     label="Libellé long" %}
+              {% include "backoffice/partials/sortable_th.html" with col="code_voie_ville"  label="Code ville" %}
+              {% include "backoffice/partials/sortable_th.html" with col="code_voie_rivoli" label="Code Rivoli" %}
+              {% include "backoffice/partials/sortable_th.html" with col="voie_privee"      label="Voie privée" %}
+              {% include "backoffice/partials/sortable_th.html" with col="nb_alignements" label="Alignements" %}
+              {% include "backoffice/partials/sortable_th.html" with col="date_creation" label="Création" %}
+              {% include "backoffice/partials/sortable_th.html" with col="date_modification" label="Modification" %}
+              <th class="font-semibold text-center w-28">Actions</th>
             </tr>
-          {% empty %}
-            <tr>
-              <td colspan="8" class="text-center py-12 text-base-content/30 text-sm">
-                Aucune voie ne correspond aux critères
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {% for v in voies %}
+              <tr class="data-row border-b border-base-100 last:border-0">
+                <td class="text-center">
+                  <input
+                    type="checkbox"
+                    name="selected_ids"
+                    value="{{ v.pk }}"
+                    class="checkbox checkbox-xs voie-select-item"
+                    data-libelle="{{ v.libelle_long|default:v.pk|escape }}"
+                    data-nb-alignements="{{ v.nb_alignements|default:0 }}"
+                    aria-label="Sélectionner la voie {{ v.libelle_long|default:v.pk }}" />
+                </td>
+                <td class="font-medium text-base-content">{{ v.libelle_long|default:"—" }}</td>
+                <td class="text-base-content/70 text-xs">{{ v.code_voie_ville|default:"—" }}</td>
+                <td class="text-base-content/70 text-xs">{{ v.code_voie_rivoli|default:"—" }}</td>
+                <td>
+                  {% if v.voie_privee %}
+                    <span class="badge badge-warning badge-soft badge-sm">Oui</span>
+                  {% else %}
+                    <span class="badge badge-ghost badge-sm">Non</span>
+                  {% endif %}
+                </td>
+                <td class="text-center">
+                  {% if v.nb_alignements > 0 %}
+                    <a href="{% url 'backoffice:gestion_alignements' %}?voie={{ v.pk }}"
+                      class="badge badge-primary badge-soft badge-sm hover:badge-primary transition-colors"
+                      aria-label="{{ v.nb_alignements }} alignement{{ v.nb_alignements|pluralize }} pour la voie {{ v.libelle_long }}">
+                      {{ v.nb_alignements }}
+                    </a>
+                  {% else %}
+                    <span class="text-base-content/30 text-xs">—</span>
+                  {% endif %}
+                </td>
+                <td class="text-base-content/60 text-xs whitespace-nowrap">
+                  {% if v.date_creation %}{{ v.date_creation|date:"d/m/Y" }}{% else %}—{% endif %}
+                </td>
+                <td class="text-base-content/60 text-xs whitespace-nowrap">
+                  {% if v.date_modification %}{{ v.date_modification|date:"d/m/Y" }}{% else %}—{% endif %}
+                </td>
+                <td>
+                  <div class="flex items-center justify-center gap-0.5">
+
+                    <a href="{% url 'backoffice:gestion_voie_edit' v.pk %}"
+                      class="btn btn-ghost btn-xs btn-square tooltip tooltip-left inline-flex items-center justify-center"
+                       data-tip="Éditer"
+                       aria-label="Éditer la voie {{ v.libelle_long|default:v.pk }}">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40 hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                      </svg>
+                    </a>
+
+                    <button
+                      type="button"
+                      onclick="confirmerSuppression({{ v.pk }}, '{{ v.libelle_long|default:v.pk|escapejs }}')"
+                      class="btn btn-ghost btn-xs btn-square tooltip tooltip-left inline-flex items-center justify-center"
+                      data-tip="Supprimer"
+                      aria-label="Supprimer la voie {{ v.libelle_long|default:v.pk }}">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-base-content/40 hover:text-error transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                    </button>
+
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="9" class="text-center py-12 text-base-content/30 text-sm">
+                  Aucune voie ne correspond aux critères
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </form>
 
     {% include "backoffice/partials/pagination.html" with page_obj=page_obj %}
 
@@ -187,6 +195,40 @@
     <form method="dialog" class="modal-backdrop"><button>Fermer</button></form>
   </dialog>
 
+  <dialog id="modal-bulk-confirmation" class="modal">
+    <div class="modal-box max-w-2xl">
+      <h3 class="font-bold text-base">Confirmer l'action groupée</h3>
+
+      <div class="mt-4 rounded-lg border border-base-200 bg-base-200/30 px-4 py-3 text-sm">
+        <p class="text-base-content/80">
+          <span class="font-semibold">Action :</span>
+          <span id="bulk-modal-action-label">—</span>
+        </p>
+        <p class="text-base-content/70 mt-1">
+          <span class="font-semibold">Type d'objet :</span> Voie
+        </p>
+        <p class="text-base-content/70 mt-1">
+          <span class="font-semibold">Nombre d'objets sélectionnés :</span>
+          <span id="bulk-modal-count">0</span>
+        </p>
+      </div>
+
+      <div class="mt-4">
+        <p class="text-sm font-semibold text-base-content">Impact prévisible</p>
+        <ul id="bulk-modal-impact" class="mt-2 text-sm text-base-content/70 list-disc pl-5 space-y-1">
+        </ul>
+      </div>
+
+      <div class="modal-action">
+        <form method="dialog">
+          <button type="submit" class="btn btn-ghost btn-sm">Annuler</button>
+        </form>
+        <button id="bulk-confirm-btn" type="button" class="btn btn-primary btn-sm">Confirmer</button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button type="submit">Fermer</button></form>
+  </dialog>
+
 {% endblock %}
 
 
@@ -198,5 +240,129 @@ function confirmerSuppression(pk, libelle) {
   document.getElementById('form-suppression').action = `/gestion/voies/${pk}/supprimer/`;
   document.getElementById('modal-suppression').showModal();
 }
+
+(function initBulkActionsVoies() {
+  var bulkForm = document.getElementById('bulk-voies-form');
+  var selectAll = document.getElementById('check-all-voies');
+  var actionSelect = document.getElementById('bulk_action');
+  var submitBtn = document.getElementById('bulk_submit_btn');
+  var countLabel = document.getElementById('bulk_selected_count');
+  var modal = document.getElementById('modal-bulk-confirmation');
+  var modalActionLabel = document.getElementById('bulk-modal-action-label');
+  var modalCount = document.getElementById('bulk-modal-count');
+  var modalImpact = document.getElementById('bulk-modal-impact');
+  var confirmBtn = document.getElementById('bulk-confirm-btn');
+
+  if (!bulkForm || !selectAll || !actionSelect || !submitBtn || !countLabel || !modal || !modalActionLabel || !modalCount || !modalImpact || !confirmBtn) return;
+
+  function getItems() {
+    return Array.from(document.querySelectorAll('.voie-select-item'));
+  }
+
+  function getSelectedItems() {
+    return getItems().filter(function (cb) { return cb.checked; });
+  }
+
+  function getActionLabel(action) {
+    if (action === 'set_voie_privee_oui') return 'Marquer privée';
+    if (action === 'set_voie_privee_non') return 'Marquer non privée';
+    if (action === 'delete_selected') return 'Supprimer la sélection';
+    return 'Action inconnue';
+  }
+
+  function fillImpact(action, selectedItems) {
+    modalImpact.innerHTML = '';
+    var alignementsTotal = selectedItems.reduce(function (acc, cb) {
+      var n = parseInt(cb.dataset.nbAlignements || '0', 10);
+      return acc + (isNaN(n) ? 0 : n);
+    }, 0);
+    var voiesAvecAlignements = selectedItems.filter(function (cb) {
+      var n = parseInt(cb.dataset.nbAlignements || '0', 10);
+      return !isNaN(n) && n > 0;
+    }).length;
+    var voiesSansAlignements = selectedItems.length - voiesAvecAlignements;
+
+    function addImpact(text) {
+      var li = document.createElement('li');
+      li.textContent = text;
+      modalImpact.appendChild(li);
+    }
+
+    if (action === 'set_voie_privee_oui' || action === 'set_voie_privee_non') {
+      addImpact('Modification groupée du champ "Voie privée" sur les voies sélectionnées.');
+      addImpact('Aucune suppression de voie ni d objet lié n est effectuée.');
+      addImpact('Les alignements liés sont conservés.');
+      return;
+    }
+
+    if (action === 'delete_selected') {
+      addImpact('Suppression demandée des voies sélectionnées.');
+      addImpact(voiesSansAlignements + ' voie(s) sans alignement lié seront supprimées.');
+      addImpact(voiesAvecAlignements + ' voie(s) avec alignements liés ne seront pas supprimées (suppression bloquée).');
+      if (alignementsTotal > 0) {
+        addImpact(alignementsTotal + ' alignement(s) lié(s) resteront inchangés.');
+      }
+      addImpact('Aucune suppression en cascade d alignements n est réalisée par cette action.');
+      return;
+    }
+
+    addImpact('Impact non déterminé pour cette action.');
+  }
+
+  function updateState() {
+    var items = getItems();
+    var checkedItems = getSelectedItems();
+    var checkedCount = checkedItems.length;
+
+    countLabel.textContent = checkedCount + ' sélection' + (checkedCount > 1 ? 's' : '');
+    submitBtn.disabled = !(checkedCount > 0 && actionSelect.value);
+
+    if (!items.length) {
+      selectAll.checked = false;
+      selectAll.indeterminate = false;
+      return;
+    }
+    if (checkedCount === 0) {
+      selectAll.checked = false;
+      selectAll.indeterminate = false;
+    } else if (checkedCount === items.length) {
+      selectAll.checked = true;
+      selectAll.indeterminate = false;
+    } else {
+      selectAll.indeterminate = true;
+    }
+  }
+
+  selectAll.addEventListener('change', function () {
+    var items = getItems();
+    items.forEach(function (cb) { cb.checked = selectAll.checked; });
+    updateState();
+  });
+
+  document.addEventListener('change', function (e) {
+    if (e.target && e.target.classList && e.target.classList.contains('voie-select-item')) {
+      updateState();
+    }
+  });
+
+  actionSelect.addEventListener('change', updateState);
+
+  submitBtn.addEventListener('click', function () {
+    var action = actionSelect.value;
+    var selectedItems = getSelectedItems();
+    if (!action || !selectedItems.length) return;
+
+    modalActionLabel.textContent = getActionLabel(action);
+    modalCount.textContent = String(selectedItems.length);
+    fillImpact(action, selectedItems);
+    modal.showModal();
+  });
+
+  confirmBtn.addEventListener('click', function () {
+    bulkForm.submit();
+  });
+
+  updateState();
+})();
 </script>
 {% endblock %}

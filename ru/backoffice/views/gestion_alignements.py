@@ -55,13 +55,15 @@ class ReglesAlignementAutocompleteView(View):
             RuRegle.objects
             .filter(type_regle=RuRegle.TypeRegle.ALIGNEMENT)
             .filter(Q(code__icontains=q) | Q(libelle__icontains=q))
-            .values('id_regle', 'code', 'libelle')[:15]
+            .values('id_regle', 'code', 'libelle', 'type_valeur')[:15]
         )
         results = [
             {
                 'id': r['id_regle'],
                 'label': r['code'] or str(r['id_regle']),
                 'codes': r['libelle'] or '',
+                'type_valeur': r.get('type_valeur') or RuRegle.TypeValeur.PAS_DE_VALEUR,
+                'liste_valeurs': ['test 1', 'test 2'] if (r.get('type_valeur') == RuRegle.TypeValeur.LISTE_FIXE) else [],
             }
             for r in regles
         ]
@@ -293,7 +295,8 @@ class AlignementEditView(View):
         onglet = self._get_onglet(request)
         form   = AlignementForm(request.POST, instance=alignement)
         if form.is_valid():
-            form.save()
+            alignement = form.save()
+            messages.success(request, f'Alignement {alignement.id_alignement} enregistré avec succès.')
             return redirect(
                 f"{reverse('backoffice:alignement_edit', args=[pk])}?onglet={onglet}"
             )

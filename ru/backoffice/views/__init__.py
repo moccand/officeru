@@ -52,6 +52,9 @@ from .gestion_regles import (
     RegleAjouterView,
     RegleEditView,
     RegleSupprimerView,
+    RegleTypeValeurByIdView,
+    RegleValeursAnalyseView,
+    RegleValeursSupprimerView,
 )
 
 from .gestion_voies import (
@@ -99,7 +102,10 @@ __all__ = [
     'GestionAlignementsView', 'AlignementAjouterView',
     'AlignementEditView', 'AlignementSupprimerView',
     # gestion règles
-    'GestionReglesView', 'RegleAjouterView', 'RegleEditView', 'RegleSupprimerView',
+    'GestionReglesView',
+    'RegleAjouterView', 'RegleEditView', 'RegleSupprimerView',
+    'RegleTypeValeurByIdView',
+    'RegleValeursAnalyseView', 'RegleValeursSupprimerView',
     # gestion voies
     'VoiesAutocompleteView', 'GestionVoiesView',
     'GestionVoieEditView', 'GestionVoieAjouterView',
