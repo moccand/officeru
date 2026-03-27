@@ -15,6 +15,9 @@ env = environ.Env(
     DJANGO_CSRF_TRUSTED_ORIGINS=(list, []),
     DATABASE_URL=(str, f'sqlite:///{BASE_DIR / "db.sqlite3"}'),
     DJANGO_LOG_DIR=(str, str(BASE_DIR / 'logs')),
+    DJANGO_LOG_LEVEL_APPLICATION=(str, 'INFO'),
+    DJANGO_LOG_LEVEL_ACCESS=(str, 'DEBUG'),
+    DJANGO_LOG_LEVEL_ERROR=(str, 'ERROR'),
 )
 
 environ.Env.read_env(BASE_DIR.parent / '.env')
@@ -42,6 +45,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'backoffice.middleware.AccessLogMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -101,44 +105,81 @@ APPLICATION_RELEASE = 'v2.0'
 
 # ── Logging ───────────────────────────────────────────────────
 
-LOG_DIR = Path(env('DJANGO_LOG_DIR'))
+LOG_DIR_RAW = env('DJANGO_LOG_DIR')
+LOG_DIR = Path(LOG_DIR_RAW) if os.path.isabs(LOG_DIR_RAW) else (BASE_DIR / LOG_DIR_RAW)
 LOG_DIR.mkdir(parents=True, exist_ok=True)
+APPLICATION_LOG_LEVEL = env('DJANGO_LOG_LEVEL_APPLICATION').upper()
+ACCESS_LOG_LEVEL = env('DJANGO_LOG_LEVEL_ACCESS').upper()
+ERROR_LOG_LEVEL = env('DJANGO_LOG_LEVEL_ERROR').upper()
 
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {
+        'standard': {
             'format': '{levelname} {asctime} {module} {message}',
+            'style':  '{',
+        },
+        'access': {
+            'format': '{asctime} {levelname} {message}',
             'style':  '{',
         },
     },
     'handlers': {
-        'console': {
-            'class':     'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
-        'file': {
+        'application_file': {
             'class':     'logging.handlers.RotatingFileHandler',
-            'filename':  str(LOG_DIR / 'django.log'),
+            'filename':  str(LOG_DIR / 'application.log'),
             'maxBytes':  5 * 1024 * 1024,  # 5 Mo
             'backupCount': 3,
-            'formatter': 'verbose',
+            'formatter': 'standard',
+            'level': APPLICATION_LOG_LEVEL,
         },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level':    'WARNING',
+        'error_file': {
+            'class':     'logging.handlers.RotatingFileHandler',
+            'filename':  str(LOG_DIR / 'erreur.log'),
+            'maxBytes':  5 * 1024 * 1024,  # 5 Mo
+            'backupCount': 3,
+            'formatter': 'standard',
+            'level': ERROR_LOG_LEVEL,
+        },
+        'access_file': {
+            'class':     'logging.handlers.RotatingFileHandler',
+            'filename':  str(LOG_DIR / 'acces.log'),
+            'maxBytes':  5 * 1024 * 1024,  # 5 Mo
+            'backupCount': 3,
+            'formatter': 'access',
+            'level': ACCESS_LOG_LEVEL,
+        },
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],
-            'level':    'WARNING' if not DEBUG else 'INFO',
+            'handlers': ['application_file', 'error_file'],
+            'level': APPLICATION_LOG_LEVEL,
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['application_file', 'error_file'],
+            'level': APPLICATION_LOG_LEVEL,
+            'propagate': False,
+        },
+        'django.server': {
+            'handlers': ['access_file'],
+            'level': ACCESS_LOG_LEVEL,
             'propagate': False,
         },
         'backoffice': {
-            'handlers': ['console', 'file'],
-            'level':    'DEBUG' if DEBUG else 'INFO',
+            'handlers': ['application_file', 'error_file'],
+            'level': APPLICATION_LOG_LEVEL,
+            'propagate': False,
+        },
+        'core': {
+            'handlers': ['application_file', 'error_file'],
+            'level': APPLICATION_LOG_LEVEL,
+            'propagate': False,
+        },
+        'access': {
+            'handlers': ['access_file'],
+            'level': ACCESS_LOG_LEVEL,
             'propagate': False,
         },
     },
