@@ -19,7 +19,7 @@ from django.db.models import (
 import base64
 import json
 
-from django.db.models.functions import Coalesce
+from django.db.models.functions import Coalesce, Lower
 
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -113,9 +113,16 @@ class GestionReglesView(ListView):
             'date_creation', 'date_modification', 'nb_details_lies',
         }
         if sort in cols:
-            primary = f'-{sort}' if dire == 'desc' else sort
-            # Tri stable pour la pagination (évite les lignes qui « sautent »).
-            qs = qs.order_by(primary, 'id_regle')
+            text_cols = {'code', 'type_regle', 'libelle', 'doc_urba', 'autorite'}
+            if sort in text_cols:
+                primary = Lower(sort).desc() if dire == 'desc' else Lower(sort).asc()
+                secondary = f'-{sort}' if dire == 'desc' else sort
+                # Tri stable pour la pagination (évite les lignes qui « sautent »).
+                qs = qs.order_by(primary, secondary, 'id_regle')
+            else:
+                primary = f'-{sort}' if dire == 'desc' else sort
+                # Tri stable pour la pagination (évite les lignes qui « sautent »).
+                qs = qs.order_by(primary, 'id_regle')
         return qs
 
     def get_paginate_by(self, qs):

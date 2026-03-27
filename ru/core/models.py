@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.functions import Lower
 from django.utils import timezone
 
 # from django.contrib.gis.db import models as gis_models
@@ -55,6 +56,10 @@ class RuParcelle(models.Model):
             models.Index(fields=['identifiant'], name='idx_ru_parcelle_identifiant'),
             models.Index(fields=['insee_com'], name='idx_ru_parcelle_insee_com'),
             models.Index(fields=['section'], name='idx_ru_parcelle_section'),
+            models.Index(Lower('identifiant'), name='idx_ru_parcelle_identifiant_lw'),
+            models.Index(Lower('insee_com_absorbee'), name='idx_ru_parcelle_insee_abs_lw'),
+            models.Index(Lower('section'), name='idx_ru_parcelle_section_lw'),
+            models.Index(Lower('numero'), name='idx_ru_parcelle_numero_lw'),
         ]
 
     def __str__(self):
@@ -79,6 +84,9 @@ class RuVoie(models.Model):
         db_table = 'ru_voie'
         indexes = [
             models.Index(fields=['libelle_long'], name='idx_ru_voie_libelle_long'),
+            models.Index(Lower('libelle_long'), name='idx_ru_voie_libelle_long_lw'),
+            models.Index(Lower('code_voie_ville'), name='idx_ru_voie_code_ville_lw'),
+            models.Index(Lower('code_voie_rivoli'), name='idx_ru_voie_code_rivoli_lw'),
         ]
 
     def __str__(self):
@@ -212,6 +220,11 @@ class RuRegle(models.Model):
         indexes = [
             models.Index(fields=['libelle'], name='idx_ru_regle_libelle'),
             models.Index(fields=['code'], name='idx_ru_regle_code'),
+            models.Index(Lower('code'), name='idx_ru_regle_code_lw'),
+            models.Index(Lower('libelle'), name='idx_ru_regle_libelle_lw'),
+            models.Index(Lower('doc_urba'), name='idx_ru_regle_doc_urba_lw'),
+            models.Index(Lower('autorite'), name='idx_ru_regle_autorite_lw'),
+            models.Index(Lower('type_regle'), name='idx_ru_regle_type_regle_lw'),
         ]
 
     def __str__(self):

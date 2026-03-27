@@ -24,12 +24,12 @@ class ExportExportsInternetView(RuContextMixin, TemplateView):
     breadcrumbs = [{'label': 'Export'}, {'label': 'Exports Internet'}]
 
     def _get_exports_queryset(self):
-        qs = RuExport.objects.all().order_by('-datetime_demande_export')
+        qs = RuExport.objects.select_related('agent').order_by('-datetime_demande_export')
         q = (self.request.GET.get('q') or '').strip()
         if q:
             # Filtre sur tous les champs texte (y compris statut).
             qs = qs.filter(
-                Q(login_agent__icontains=q)
+                Q(agent__username__icontains=q)
                 | Q(commentaire__icontains=q)
                 | Q(nom_du_fichier__icontains=q)
                 | Q(poids_du_fichier__icontains=q)
@@ -87,13 +87,8 @@ class ExportExportsInternetView(RuContextMixin, TemplateView):
             commentaire_raw = request.POST.get('commentaire') or ''
             commentaire = commentaire_raw.strip() or None
 
-            if request.user.is_authenticated:
-                login_agent = request.user.username
-            else:
-                login_agent = 'NON CONNECTE'
-
             RuExport.objects.create(
-                login_agent=login_agent,
+                agent=request.user if request.user.is_authenticated else None,
                 commentaire=commentaire,
                 statut=RuExport.Statut.EN_COURS,
             )

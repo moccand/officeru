@@ -57,7 +57,8 @@ python manage.py runserver
 
 
 
-
+## Déploiement
+Pour déployer le projet, suivre les instructions dans [`docs/deploiement/`](docs/deploiement/).
 
 
 

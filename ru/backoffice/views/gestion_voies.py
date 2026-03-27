@@ -5,6 +5,7 @@ Vues CRUD pour les Voies + endpoint autocomplete.
 """
 from django.contrib import messages
 from django.db.models import Count, Q
+from django.db.models.functions import Lower
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
@@ -60,7 +61,7 @@ class GestionVoiesView(ListView):
     def get_queryset(self):
         qs = RuVoie.objects.annotate(
             nb_alignements=Count('alignements')
-        ).order_by('libelle_long')
+        ).order_by(Lower('libelle_long'), 'libelle_long')
 
         q = self.request.GET.get('q', '').strip()
         if q:
@@ -84,7 +85,12 @@ class GestionVoiesView(ListView):
             'voie_privee', 'date_creation', 'date_modification', 'nb_alignements',
         }
         if sort in cols:
-            qs = qs.order_by(f'-{sort}' if dire == 'desc' else sort)
+            text_cols = {'libelle_long', 'code_voie_ville', 'code_voie_rivoli'}
+            if sort in text_cols:
+                sort_expr = Lower(sort)
+                qs = qs.order_by(sort_expr.desc(), f'-{sort}') if dire == 'desc' else qs.order_by(sort_expr.asc(), sort)
+            else:
+                qs = qs.order_by(f'-{sort}' if dire == 'desc' else sort)
         return qs
 
     def get_context_data(self, **kwargs):

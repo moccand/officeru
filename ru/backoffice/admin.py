@@ -11,9 +11,13 @@ class GroupProfileAdmin(admin.ModelAdmin):
 
 @admin.register(RuExport)
 class RuExportAdmin(admin.ModelAdmin):
+    @admin.display(description='agent')
+    def agent_username(self, obj):
+        return obj.agent.username if obj.agent else ''
+
     list_display = (
         'datetime_demande_export',
-        'login_agent',
+        'agent_username',
         'statut',
         'datetime_fin_export',
         'nom_du_fichier',
@@ -21,7 +25,7 @@ class RuExportAdmin(admin.ModelAdmin):
     )
     list_filter = ('statut',)
     search_fields = (
-        'login_agent',
+        'agent__username',
         'commentaire',
         'nom_du_fichier',
         'poids_du_fichier',

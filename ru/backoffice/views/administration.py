@@ -9,6 +9,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AdminPasswordChangeForm
 from django.contrib.auth.models import Group, Permission
 from django.db.models import Count, Q
+from django.db.models.functions import Lower
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views import View
@@ -31,7 +32,7 @@ class AdministrationUtilisateursView(ListView):
     paginate_by         = 25
 
     def get_queryset(self):
-        qs = User.objects.all().order_by('username')
+        qs = User.objects.all().order_by(Lower('username'), 'username')
         q  = self.request.GET.get('q', '').strip()
         if q:
             qs = qs.filter(
@@ -51,7 +52,12 @@ class AdministrationUtilisateursView(ListView):
         cols = {'username', 'last_name', 'first_name', 'email',
                 'is_active', 'is_staff', 'date_joined'}
         if sort in cols:
-            qs = qs.order_by(f'-{sort}' if dire == 'desc' else sort)
+            text_cols = {'username', 'last_name', 'first_name', 'email'}
+            if sort in text_cols:
+                sort_expr = Lower(sort)
+                qs = qs.order_by(sort_expr.desc(), f'-{sort}') if dire == 'desc' else qs.order_by(sort_expr.asc(), sort)
+            else:
+                qs = qs.order_by(f'-{sort}' if dire == 'desc' else sort)
         return qs
 
     def get_paginate_by(self, qs):
@@ -72,14 +78,18 @@ class AdministrationGroupesView(ListView):
     paginate_by         = 25
 
     def get_queryset(self):
-        qs = Group.objects.annotate(nb_utilisateurs=Count('user')).order_by('name')
+        qs = Group.objects.annotate(nb_utilisateurs=Count('user')).order_by(Lower('name'), 'name')
         q  = self.request.GET.get('q', '').strip()
         if q:
             qs = qs.filter(name__icontains=q)
         sort = self.request.GET.get('sort', 'name')
         dire = self.request.GET.get('dir', 'asc')
         if sort in {'name', 'nb_utilisateurs'}:
-            qs = qs.order_by(f'-{sort}' if dire == 'desc' else sort)
+            if sort == 'name':
+                sort_expr = Lower('name')
+                qs = qs.order_by(sort_expr.desc(), '-name') if dire == 'desc' else qs.order_by(sort_expr.asc(), 'name')
+            else:
+                qs = qs.order_by(f'-{sort}' if dire == 'desc' else sort)
         return qs
 
     def get_context_data(self, **kwargs):

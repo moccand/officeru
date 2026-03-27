@@ -6,6 +6,7 @@ Vues CRUD pour les Parcelles + endpoint autocomplete.
 from django.contrib import messages
 from django.db.models import Q
 from django.db.models import Max
+from django.db.models.functions import Lower
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -88,7 +89,12 @@ class GestionParcellesView(ListView):
             'date_modif_regles', 'date_creation', 'date_modification',
         }
         if sort in cols:
-            qs = qs.order_by(f'-{sort}' if dire == 'desc' else sort)
+            text_cols = {'identifiant', 'insee_com_absorbee', 'section', 'numero'}
+            if sort in text_cols:
+                sort_expr = Lower(sort)
+                qs = qs.order_by(sort_expr.desc(), f'-{sort}') if dire == 'desc' else qs.order_by(sort_expr.asc(), sort)
+            else:
+                qs = qs.order_by(f'-{sort}' if dire == 'desc' else sort)
         return qs
 
     def get_paginate_by(self, qs):

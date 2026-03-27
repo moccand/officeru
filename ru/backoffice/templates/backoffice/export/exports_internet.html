@@ -124,7 +124,7 @@
                   <td class="text-xs whitespace-nowrap text-base-content/60">
                     {% if e.datetime_demande_export %}{{ e.datetime_demande_export|date:"d/m/Y H:i" }}{% else %}—{% endif %}
                   </td>
-                  <td class="text-xs whitespace-nowrap font-mono text-base-content/60">{{ e.login_agent|default:"—" }}</td>
+                  <td class="text-xs whitespace-nowrap font-mono text-base-content/60">{{ e.agent.username|default:"—" }}</td>
                   <td class="text-xs whitespace-nowrap text-base-content/60">
                     {% if e.datetime_fin_export %}{{ e.datetime_fin_export|date:"d/m/Y H:i" }}{% else %}—{% endif %}
                   </td>

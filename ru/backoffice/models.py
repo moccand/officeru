@@ -1,6 +1,7 @@
 from django.db import models
 
 from django.contrib.auth.models import Group
+from django.conf import settings
 
 class GroupProfile(models.Model):
     """
@@ -47,9 +48,13 @@ class RuExport(models.Model):
         auto_now_add=True,
         verbose_name='Date de la demande d export',
     )
-    login_agent = models.CharField(
-        max_length=150,
-        verbose_name='Login de l agent',
+    agent = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='exports',
+        verbose_name='Agent',
     )
     commentaire = models.TextField(
         blank=True,
